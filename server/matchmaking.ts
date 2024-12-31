@@ -1,23 +1,21 @@
-import Clients from "./clients.ts";
-import Events from "./events.ts";
+import Rooms from "./rooms.ts";
 
 export default class Matchmaking {
-    private clients: Clients;
+    private rooms: Rooms;
     private userInQueue: string|null;
 
-    constructor(clients: Clients) {
-        this.clients = clients;
+    constructor(rooms: Rooms) {
+        this.rooms = rooms;
         this.userInQueue = null;
     }
 
     public queue(id: string) {
-        if (this.userInQueue == null) {
+        if (this.userInQueue === null || this.userInQueue === id) {
             this.userInQueue = id;
             return;
         }
 
-        this.clients.send(this.userInQueue, Events.MATCHMAKING_FOUND, {opponentId: id});
-        this.clients.send(id, Events.MATCHMAKING_FOUND, {opponentId: this.userInQueue});
+        this.rooms.create(this.userInQueue, id);
         this.userInQueue = null;
     }
 

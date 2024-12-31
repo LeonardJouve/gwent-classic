@@ -1,3 +1,4 @@
+import Battles from "./battles.ts";
 import Clients from "./clients.ts";
 import Events from "./events.ts";
 
@@ -5,10 +6,12 @@ type Room = Record<string, boolean>;
 
 export default class Rooms {
     private clients: Clients;
+    private battles: Battles;
     private rooms: Room[];
 
-    constructor(clients: Clients) {
+    constructor(clients: Clients, battles: Battles) {
         this.clients = clients;
+        this.battles = battles;
         this.rooms = [];
     }
 
@@ -30,6 +33,10 @@ export default class Rooms {
         return this.rooms.find((room) => id in room) ?? null;
     }
 
+    private removeRoom(room: Room) {
+        this.rooms.splice(this.rooms.indexOf(room), 1);
+    }
+
     public leave(id: string) {
         const room = this.getClientRoom(id);
         if (!room) return;
@@ -39,6 +46,8 @@ export default class Rooms {
 
             this.clients.send(player, Events.MATCH_WON, null);
         });
+
+        this.removeRoom(room);
     }
 
     public setReady(id: string) {
@@ -48,7 +57,10 @@ export default class Rooms {
         room[id] = true;
 
         if (Object.values(room).every(Boolean)) {
-            Object.keys(room).forEach((player) => this.clients.send(player, Events.MATCH_BEGIN, null));
+            const [firstPlayer, secondPlayer] = Object.keys(room);
+            this.battles.create(firstPlayer, secondPlayer);
         }
+
+        this.removeRoom(room);
     }
 }
