@@ -39,14 +39,14 @@ export default class Clients {
         client.name = name;
     }
 
-    public broadcast(type: Events, data: Record<any, any>) {
+    public broadcast(type: Events, data: Record<any, any>|null) {
         Object.values(this.clients).forEach((client) => client.socket.send(JSON.stringify({
             type,
             data,
         })));
     }
 
-    public send(id: string, type: Events, data: Record<any, any>) {
+    public send(id: string, type: Events, data: Record<any, any>|null) {
         const client = this.clients[id];
         if (!client) return;
 

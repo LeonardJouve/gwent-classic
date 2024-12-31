@@ -1,9 +1,11 @@
 import Events from "./events.ts";
 import Clients from "./clients.ts";
 import Matchmaking from "./matchmaking.ts";
+import Rooms from "./rooms.ts";
 
 const clients = new Clients();
-const matchmaking = new Matchmaking(clients);
+const rooms = new Rooms(clients);
+const matchmaking = new Matchmaking(rooms);
 
 Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
     if (req.headers.get("upgrade") != "websocket") {
@@ -21,27 +23,34 @@ Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
         if (!id) return;
 
         matchmaking.unqueue(id);
+        rooms.leave(id);
         clients.remove(id);
     });
 
     socket.addEventListener("message", (event) => {
         if (!id) return;
 
-        const {type, data} = JSON.parse(event.data);
-        switch (type) {
-        case Events.RENAME:
-            clients.rename(id, data.name);
-            break;
-        case Events.UPDATE_PLAYER_COUNT:
-            console.log(event.data);
-            break;
-        case Events.MATCHMAKING_QUEUE:
-            matchmaking.queue(id);
-            break;
-        case Events.MATCHMAKING_UNQUEUE:
-            matchmaking.unqueue(id);
-            break;
-        }
+        try {
+            const {type, data} = JSON.parse(event.data);
+            switch (type) {
+            case Events.RENAME:
+                clients.rename(id, data.name);
+                break;
+            case Events.UPDATE_PLAYER_COUNT:
+                console.log(event.data);
+                break;
+            case Events.MATCHMAKING_QUEUE:
+                if (rooms.isClientInRoom(id)) break;
+                matchmaking.queue(id);
+                break;
+            case Events.MATCHMAKING_UNQUEUE:
+                matchmaking.unqueue(id);
+                break;
+            case Events.ROOM_READY:
+                rooms.setReady(id);
+                break;
+            }
+        } catch (e) {}
     });
 
     return response;
