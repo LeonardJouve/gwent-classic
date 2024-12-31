@@ -1,6 +1,6 @@
 * {
    box-sizing:border-box;
-   cursor: url('img/icons/cursor.png'), auto;
+   cursor: url('assets/img/icons/cursor.png'), auto;
 }
 
 html,body
@@ -32,7 +32,7 @@ main {
 	position:absolute;
 	width: 100%;
 	height: calc(100vw * 1080 / 1920);
-	background-image: url('img/board.jpg');
+	background-image: url('assets/img/board.jpg');
 	background-size: 100% auto;
 	background-repeat: no-repeat;
 }
@@ -140,49 +140,49 @@ html {
 #notif-me-first::after { content:"You will go first"; }
 #notif-op-first::after { content:"Your opponent will go first"; }
 
-#notif-me-coin { background-image: url('img/icons/notif_me_coin.png'); }
+#notif-me-coin { background-image: url('assets/img/icons/notif_me_coin.png'); }
 #notif-me-coin::after { content:"You will go first"; }
 
-#notif-op-coin { background-image: url('img/icons/notif_op_coin.png'); }
+#notif-op-coin { background-image: url('assets/img/icons/notif_op_coin.png'); }
 #notif-op-coin::after { content:"Your opponent will go first"; }
 
-#notif-round-start { background-image: url('img/icons/notif_round_start.png'); }
+#notif-round-start { background-image: url('assets/img/icons/notif_round_start.png'); }
 #notif-round-start::after { content:"Round Start"; }
 
-#notif-me-pass { background-image: url('img/icons/notif_round_passed.png'); }
+#notif-me-pass { background-image: url('assets/img/icons/notif_round_passed.png'); }
 #notif-me-pass::after { content:"Round passed"; }
 
-#notif-op-pass { background-image: url('img/icons/notif_round_passed.png'); }
+#notif-op-pass { background-image: url('assets/img/icons/notif_round_passed.png'); }
 #notif-op-pass::after { content:"Your opponent has passed"; }
 
-#notif-win-round { background-image: url('img/icons/notif_win_round.png'); } 
+#notif-win-round { background-image: url('assets/img/icons/notif_win_round.png'); } 
 #notif-win-round::after { content:"You won the round!"; }
 
-#notif-lose-round { background-image: url('img/icons/notif_lose_round.png'); }
+#notif-lose-round { background-image: url('assets/img/icons/notif_lose_round.png'); }
 #notif-lose-round::after { content:"Your opponent won the round"; }
 
-#notif-draw-round { background-image: url('img/icons/notif_draw_round.png'); }
+#notif-draw-round { background-image: url('assets/img/icons/notif_draw_round.png'); }
 #notif-draw-round::after {content:"The round ended in a draw"; }
 
-#notif-me-turn { background-image: url('img/icons/notif_me_turn.png'); } 
+#notif-me-turn { background-image: url('assets/img/icons/notif_me_turn.png'); } 
 #notif-me-turn::after { content:"Your turn!"; }
 
-#notif-op-turn { background-image: url('img/icons/notif_op_turn.png'); }
+#notif-op-turn { background-image: url('assets/img/icons/notif_op_turn.png'); }
 #notif-op-turn::after { content:"Opponent's turn"; }
 
-#notif-north { background-image: url('img/icons/notif_north.png'); }
+#notif-north { background-image: url('assets/img/icons/notif_north.png'); }
 #notif-north::after { content:"Northern Realms faction ability triggered - North draws an additional card."; }
 
-#notif-monsters { background-image: url('img/icons/notif_monsters.png'); }
+#notif-monsters { background-image: url('assets/img/icons/notif_monsters.png'); }
 #notif-monsters::after { content: "Monsters faction ability triggered - one randomly-chosen Monster Unit Card stays on the board"; }
 
-#notif-scoiatael { background-image: url('img/icons/notif_scoiatael.png'); }
+#notif-scoiatael { background-image: url('assets/img/icons/notif_scoiatael.png'); }
 #notif-scoiatael::after { content: "Opponent used the Scoia'tael faction perk to go first."; }
 
-#notif-skellige-op{ background-image: url('img/icons/notif_skellige.png'); }
+#notif-skellige-op{ background-image: url('assets/img/icons/notif_skellige.png'); }
 #notif-skellige-op::after { content: "Opponent Skellige Ability Triggered!"; }
 
-#notif-skellige-me{ background-image: url('img/icons/notif_skellige.png'); }
+#notif-skellige-me{ background-image: url('assets/img/icons/notif_skellige.png'); }
 #notif-skellige-me::after { content: "Skellige Ability Triggered!"; }
 
 /* ------- card preview ------------- */
@@ -269,7 +269,7 @@ html {
 	height: 100%;
 	border: 1px solid blue;
 	z-index: -1;
-	background-image: url('img/icons/blank.png');
+	background-image: url('assets/img/icons/blank.png');
 	background-size: cover;
 }
 */
@@ -333,7 +333,7 @@ html {
     height: calc(100vw * 1080 / 1920);
     background-color: rgba(10,10,10,.95);
     z-index: 1000;
-    /* background-image: url(img/boardtest10.png); */
+    /* background-image: url(assets/img/boardtest10.png); */
     /* background-size: contain; */
 }
 
@@ -413,9 +413,9 @@ html {
 	margin-bottom: -21.65%;
 	background-size: contain;
 }
-.end-draw { background-image: url('img/icons/end_draw.png'); }
-.end-win  { background-image: url('img/icons/end_win.png');  }
-.end-lose { background-image: url('img/icons/end_lose.png'); }
+.end-draw { background-image: url('assets/img/icons/end_draw.png'); }
+.end-win  { background-image: url('assets/img/icons/end_win.png');  }
+.end-lose { background-image: url('assets/img/icons/end_lose.png'); }
 
 #end-screen > table {
 	top: 55%;
@@ -505,7 +505,7 @@ html {
 */
 
 /*
-main { background-image: url('img/boardtest8.png'); }
+main { background-image: url('assets/img/boardtest8.png'); }
 */
 
 /*
@@ -576,7 +576,7 @@ main { background-image: url('img/boardtest8.png'); }
 }
 
 .leader-active > div {
-	background-image: url('img/icons/icon_leader_active.png');
+	background-image: url('assets/img/icons/icon_leader_active.png');
 	background-size: cover;
 	background-repeat: no-repeat;
 	width: 100%;
@@ -617,7 +617,7 @@ main { background-image: url('img/boardtest8.png'); }
 	height: 80%;
 	margin-bottom: -24%;
 	
-	background-image: url('img/icons/profile.png');
+	background-image: url('assets/img/icons/profile.png');
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: center;
@@ -630,7 +630,7 @@ main { background-image: url('img/boardtest8.png'); }
 	top: -6%;
 	height: 118%;
 	width: 118%;
-	background-image: url('img/icons/icon_player_border.png');
+	background-image: url('assets/img/icons/icon_player_border.png');
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: center;
@@ -673,15 +673,15 @@ main { background-image: url('img/boardtest8.png'); }
 }
 
 #score-total-me {
-	background-image: url('img/icons/score_total_me.png');
+	background-image: url('assets/img/icons/score_total_me.png');
 }
 
 #score-total-op {
-	background-image: url('img/icons/score_total_op.png');
+	background-image: url('assets/img/icons/score_total_op.png');
 }
 
 .score-leader > div{
-	background-image: url('img/icons/icon_high_score.png');
+	background-image: url('assets/img/icons/icon_high_score.png');
 	background-repeat: no-repeat;
 	background-size: contain;
 	background-position: bottom;
@@ -705,7 +705,7 @@ main { background-image: url('img/boardtest8.png'); }
 	
 	
 	
-	background-image: url('img/icons/icon_card_count.png');
+	background-image: url('assets/img/icons/icon_card_count.png');
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: left;
@@ -721,11 +721,11 @@ main { background-image: url('img/boardtest8.png'); }
 	width: 9%;
 	height:31%;
 	margin-bottom: -9.25%;
-	background-image: url('img/icons/icon_gem_off.png');
+	background-image: url('assets/img/icons/icon_gem_off.png');
 }
 
 .gem-on {
-	background-image: url('img/icons/icon_gem_on.png');
+	background-image: url('assets/img/icons/icon_gem_on.png');
 }
 
 #gem2-op {
@@ -890,9 +890,9 @@ main { background-image: url('img/boardtest8.png'); }
 	background-position: bottom;
 	background-repeat: no-repeat;
 }
-.frost { background-image: url('img/icons/overlay_frost.png'); }
-.rain  { background-image: url('img/icons/overlay_rain.png');  }
-.fog   { background-image: url('img/icons/overlay_fog.png');   }
+.frost { background-image: url('assets/img/icons/overlay_frost.png'); }
+.rain  { background-image: url('assets/img/icons/overlay_rain.png');  }
+.fog   { background-image: url('assets/img/icons/overlay_fog.png');   }
 
 #hand-row {
 	top: 8%;
@@ -1104,7 +1104,7 @@ main { background-image: url('img/boardtest8.png'); }
 	font-size: 1.2vw;
 	color: #5f4923;
 	padding-left: 1.7vw;
-	background-image: url('img/icons/preview_count.png');
+	background-image: url('assets/img/icons/preview_count.png');
 	background-position: left;
 	background-repeat: no-repeat;
 	background-size: contain;
@@ -1163,11 +1163,11 @@ main { background-image: url('img/boardtest8.png'); }
 	background-size: 2.5vw;
 }
 
-#deck-stats > p:nth-child(2) { background-image: url('img/icons/deck_stats_count.png'); }
-#deck-stats > p:nth-child(4) { background-image: url('img/icons/deck_stats_unit.png'); }
-#deck-stats > p:nth-child(6) { background-image: url('img/icons/deck_stats_special.png'); }
-#deck-stats > p:nth-child(8) { background-image: url('img/icons/deck_stats_strength.png'); }
-#deck-stats > p:nth-child(10) { background-image: url('img/icons/deck_stats_hero.png'); }
+#deck-stats > p:nth-child(2) { background-image: url('assets/img/icons/deck_stats_count.png'); }
+#deck-stats > p:nth-child(4) { background-image: url('assets/img/icons/deck_stats_unit.png'); }
+#deck-stats > p:nth-child(6) { background-image: url('assets/img/icons/deck_stats_special.png'); }
+#deck-stats > p:nth-child(8) { background-image: url('assets/img/icons/deck_stats_strength.png'); }
+#deck-stats > p:nth-child(10) { background-image: url('assets/img/icons/deck_stats_hero.png'); }
 
 #start-game {
 	position: absolute;
