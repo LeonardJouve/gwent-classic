@@ -2,7 +2,7 @@ services:
     gwent-classic:
         container_name: gwent-classic
         build:
-        context: .
+            context: .
         ports:
             - "${WEBSOCKET_PORT}:${WEBSOCKET_PORT}"
             - "${WEBSERVER_PORT}:${WEBSERVER_PORT}"
