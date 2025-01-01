@@ -1,6 +1,6 @@
 import {serveDir} from "jsr:@std/http/file-server";
 
-import Events from "./events.ts";
+import Events from "../static/Events.js";
 import Clients from "./clients.ts";
 import Matchmaking from "./matchmaking.ts";
 import Rooms from "./rooms.ts";
@@ -40,9 +40,6 @@ Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
             switch (type) {
             case Events.RENAME:
                 clients.rename(id, data.name);
-                break;
-            case Events.UPDATE_PLAYER_COUNT:
-                console.log(event.data);
                 break;
             case Events.MATCHMAKING_QUEUE:
                 if (rooms.isClientInRoom(id) || battles.isClientInBattle(id)) break;

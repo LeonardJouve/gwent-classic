@@ -1,4 +1,4 @@
-import Events from "./events.ts";
+import Events from "../static/Events.js";
 
 type Client = {
     socket: WebSocket;
@@ -39,14 +39,14 @@ export default class Clients {
         client.name = name;
     }
 
-    public broadcast(type: Events, data: Record<any, any>|null) {
+    public broadcast(type: string, data: Record<any, any>|null) {
         Object.values(this.clients).forEach((client) => client.socket.send(JSON.stringify({
             type,
             data,
         })));
     }
 
-    public send(id: string, type: Events, data: Record<any, any>|null) {
+    public send(id: string, type: string, data: Record<any, any>|null) {
         const client = this.clients[id];
         if (!client) return;
 

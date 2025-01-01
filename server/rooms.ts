@@ -1,6 +1,6 @@
 import Battles from "./battles.ts";
 import Clients from "./clients.ts";
-import Events from "./events.ts";
+import Events from "../static/Events.js";
 
 type Room = Record<string, boolean>;
 

@@ -1,5 +1,5 @@
 import Clients from "./clients.ts";
-import Events from "./events.ts";
+import Events from "../static/Events.js";
 
 type Battle = string[];
 
