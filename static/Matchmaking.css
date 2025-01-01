@@ -34,7 +34,6 @@ body {
     border-radius: 10px;
     text-align: center;
     color: #fff;
-    text-transform: uppercase;
 }
 input:focus::placeholder {
     color: transparent;
