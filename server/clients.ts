@@ -34,7 +34,7 @@ export default class Clients {
     }
 
     private updatePlayerCount() {
-        this.broadcast(Events.UPDATE_PLAYER_COUNT, {count: Object.keys(this.clients).length});
+        this.broadcast(Events.UPDATE_PLAYER_COUNT, {count: Object.values(this.clients).filter(({socket}) => socket !== null).length});
     }
 
     public rename(id: string, name: string) {
