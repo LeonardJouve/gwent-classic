@@ -45,9 +45,6 @@ Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
                 if (rooms.isClientInRoom(id) || battles.isClientInBattle(id)) break;
                 matchmaking.queue(id);
                 break;
-            case Events.MATCHMAKING_UNQUEUE:
-                matchmaking.unqueue(id);
-                break;
             case Events.ROOM_READY:
                 rooms.setReady(id);
                 break;

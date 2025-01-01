@@ -10,8 +10,13 @@ export default class Matchmaking {
     }
 
     public queue(id: string) {
-        if (this.userInQueue === null || this.userInQueue === id) {
+        if (this.userInQueue === null) {
             this.userInQueue = id;
+            return;
+        }
+
+        if (this.userInQueue === id) {
+            this.unqueue(id);
             return;
         }
 
@@ -20,7 +25,7 @@ export default class Matchmaking {
     }
 
     public unqueue(id: string) {
-        if (this.userInQueue != id) return;
+        if (this.userInQueue !== id) return;
 
         this.userInQueue = null;
     }

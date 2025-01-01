@@ -40,10 +40,7 @@ export default class Clients {
     }
 
     public broadcast(type: string, data: Record<any, any>|null) {
-        Object.values(this.clients).forEach((client) => client.socket.send(JSON.stringify({
-            type,
-            data,
-        })));
+        Object.keys(this.clients).forEach((client) => this.send(client, type, data));
     }
 
     public send(id: string, type: string, data: Record<any, any>|null) {

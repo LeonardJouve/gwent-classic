@@ -3,7 +3,7 @@
 <html lang="en-US">
     <head>
         <title>Gwent Classic from The Witcher 3: Wild Hunt</title>
-        <script type="text/javascript" src="Matchmaking.js"></script>
+        <script type="module" src="Matchmaking.js"></script>
         <link rel="stylesheet" type="text/css" href="Matchmaking.css" />
     </head>
     <body>
@@ -13,15 +13,15 @@
 
                 <div class="container-form-landing">
 
-                <input type="text" placeholder="Username" class="field-session field-username name-input" autofocus>
+                <input id="name" type="text" placeholder="Username" class="field-session field-username name-input" autofocus>
 
-                <div class="wrap-btn-action btn-register-action startMatchmaking">
+                <div id="matchmaking" class="wrap-btn-action btn-register-action startMatchmaking">
                     <input type="submit" value="Search Opponent" class="btn-action">
                     <i class="icon-action-load image-gif-loader"></i>
                 </div>
 
                 <p id="teaser-landing" class="teaser-landing">
-                    <span>Server Status: <span id="server-status" class="status-offline">Offline</span></span>
+                    <span id="server-status-container">Server Status: <span id="server-status" class="status-offline">Offline</span></span>
                 </p>
 
                 </div>

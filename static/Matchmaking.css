@@ -59,7 +59,6 @@ input {
 }
 .icon-action-load {
     background: url(assets/img/action-load.gif) no-repeat;
-    display: none;
     width: 16px;
     height: 16px;
     float: right;
@@ -84,6 +83,11 @@ input {
     line-height: 29px;
     text-align: left;
 }
+
+.startMatchmaking:not(.queued) .icon-action-load {
+    display: none;
+}
+
 .teaser-landing {
     text-align: center;
     font-size: 21px;
