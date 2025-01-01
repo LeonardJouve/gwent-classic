@@ -19,7 +19,11 @@ socket.addEventListener("message", (event) => {
         case Events.UPDATE_PLAYER_COUNT: {
             updateNrPlayer(data.count);
             break;
-        }}
+        }
+        case Events.MATCHMAKING_FOUND:
+            window.location.pathname = '/gwent.html';
+            break;
+        }
     } catch (e) {
         console.error(e);
     }
