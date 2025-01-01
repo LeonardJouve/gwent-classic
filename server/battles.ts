@@ -12,11 +12,10 @@ export default class Battles {
         this.battles = [];
     }
 
-    public create(firstPlayer: string, secondPlayer: string) {
-        this.battles.push([firstPlayer, secondPlayer]);
+    public create(players: string[]) {
+        this.battles.push([]);
 
-        this.clients.send(firstPlayer, Events.MATCH_BEGIN, null);
-        this.clients.send(secondPlayer, Events.MATCH_BEGIN, null);
+        players.forEach((player) => this.clients.send(player, Events.MATCH_BEGIN, null));
     }
 
     public isClientInBattle(id: string): boolean {

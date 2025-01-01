@@ -19,8 +19,14 @@ Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
     const {socket, response} = Deno.upgradeWebSocket(req);
     let id: string|null = null;
 
+    const cookieHeader = req.headers.get("cookie");
+    if (cookieHeader) {
+        const cookies = Object.fromEntries(cookieHeader.split("; ").map(cookie => cookie.split("=")));
+        id = cookies["client_id"];
+    }
+
     socket.addEventListener("open", () => {
-        id = clients.add(socket);
+        id = clients.add(socket, id);
     });
 
     socket.addEventListener("close", () => {
@@ -57,12 +63,21 @@ Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
     return response;
 });
 
+const env = `
+window.BIND = "${Deno.env.get("BIND")}";
+window.WEBSOCKET_PORT = ${Deno.env.get("WEBSOCKET_PORT")};
+`;
+
 Deno.serve({port: Number(Deno.env.get("WEBSERVER_PORT"))}, async (req) => {
-    if (new URL(req.url).pathname === "/") {
+    const url = new URL(req.url);
+    switch (url.pathname) {
+    case "/":
         return new Response(null, {
             status: 302,
             headers: {Location: "/index.html"},
         });
+    case "/Env.js":
+        return new Response(env, {headers: { "Content-Type": "application/javascript" }});
     }
 
     return await serveDir(req, {fsRoot: "./static"});

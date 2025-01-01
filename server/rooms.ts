@@ -7,34 +7,41 @@ type Room = Record<string, boolean>;
 export default class Rooms {
     private clients: Clients;
     private battles: Battles;
-    private rooms: Room[];
+    private rooms: Record<string, Room>;
 
     constructor(clients: Clients, battles: Battles) {
         this.clients = clients;
         this.battles = battles;
-        this.rooms = [];
+        this.rooms = {};
     }
 
-    public create(firstPlayer: string, secondPlayer: string) {
-        this.rooms.push({
-            [firstPlayer]: false,
-            [secondPlayer]: false,
-        });
+    public create(players: string[]) {
+        const id = crypto.randomUUID();
+        this.rooms[id] = players.reduce<Room>((acc, player) => {
+            acc[player] = false;
+            return acc;
+        }, {});
 
-        this.clients.send(firstPlayer, Events.MATCHMAKING_FOUND, null);
-        this.clients.send(secondPlayer, Events.MATCHMAKING_FOUND, null);
+        players.forEach((player) => this.clients.send(player, Events.MATCHMAKING_FOUND, {id}));
     }
 
     public isClientInRoom(id: string): boolean {
-        return this.rooms.some((room) => id in room);
+        return Object.values(this.rooms).some((room) => id in room);
     }
 
     private getClientRoom(id: string): Room|null {
-        return this.rooms.find((room) => id in room) ?? null;
+        return Object.values(this.rooms).find((room) => id in room) ?? null;
+    }
+
+    private getRoomId(room: Room): string|null {
+        return Object.entries((this.rooms)).find(([, r]) => r === room)?.[0] ?? null;
     }
 
     private removeRoom(room: Room) {
-        this.rooms.splice(this.rooms.indexOf(room), 1);
+        const roomId = this.getRoomId(room);
+        if (!roomId) return;
+
+        Reflect.deleteProperty(this.rooms, roomId);
     }
 
     public leave(id: string) {
@@ -57,8 +64,7 @@ export default class Rooms {
         room[id] = true;
 
         if (Object.values(room).every(Boolean)) {
-            const [firstPlayer, secondPlayer] = Object.keys(room);
-            this.battles.create(firstPlayer, secondPlayer);
+            this.battles.create(Object.keys(room));
         }
 
         this.removeRoom(room);

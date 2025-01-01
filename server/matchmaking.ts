@@ -20,7 +20,7 @@ export default class Matchmaking {
             return;
         }
 
-        this.rooms.create(this.userInQueue, id);
+        this.rooms.create([this.userInQueue, id]);
         this.userInQueue = null;
     }
 

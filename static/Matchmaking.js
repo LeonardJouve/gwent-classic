@@ -1,6 +1,6 @@
 import Events from "./Events.js";
 
-const socket = new WebSocket("ws://100.96.219.102:2001");
+const socket = new WebSocket(`ws://${window.BIND}:${window.WEBSOCKET_PORT}`);
 
 socket.addEventListener("open", () => {
     addListeners();
@@ -16,12 +16,14 @@ socket.addEventListener("message", (event) => {
     try {
         const {type, data} = JSON.parse(event.data);
         switch (type) {
-        case Events.UPDATE_PLAYER_COUNT: {
+        case Events.UPDATE_CLIENT_ID:
+            document.cookie = `client_id=${data.id};path=/;SameSite=Strict`;
+            break;
+        case Events.UPDATE_PLAYER_COUNT:
             updateNrPlayer(data.count);
             break;
-        }
         case Events.MATCHMAKING_FOUND:
-            window.location.pathname = '/gwent.html';
+            window.location.assign(`/gwent.html?id=${data.id}`);
             break;
         }
     } catch (e) {

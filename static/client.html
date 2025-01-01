@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type="application/javascript" src="Env.js"></script>
   <title>WebSocket Client</title>
 </head>
 <body>
@@ -18,7 +19,7 @@
 
   <script>
     // Connect to the WebSocket server
-    const socket = new WebSocket("ws://100.91.55.35:2003");
+    const socket = new WebSocket(`ws://${window.BIND}:${window.WEBSOCKET_PORT}`);
 
     // Get references to DOM elements
     const messageInput = document.getElementById("message");
