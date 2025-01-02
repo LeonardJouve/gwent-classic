@@ -4,12 +4,15 @@ import Events from "../static/Events.js";
 import Clients from "./clients.ts";
 import Matchmaking from "./matchmaking.ts";
 import Rooms from "./rooms.ts";
-import Battles from "./battles.ts";
 
 const clients = new Clients();
-const battles = new Battles(clients);
-const rooms = new Rooms(clients, battles);
+const rooms = new Rooms(clients);
 const matchmaking = new Matchmaking(rooms);
+
+Deno.writeTextFileSync("./static/Env.js", `
+window.BIND = "${Deno.env.get("BIND")}";
+window.WEBSOCKET_PORT = ${Deno.env.get("WEBSOCKET_PORT")};
+`);
 
 Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
     if (req.headers.get("upgrade") != "websocket") {
@@ -34,7 +37,6 @@ Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
 
         matchmaking.unqueue(id);
         rooms.leave(id);
-        battles.leave(id);
         clients.remove(id);
     });
 
@@ -48,7 +50,6 @@ Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
                 clients.rename(id, data.name);
                 break;
             case Events.MATCHMAKING_QUEUE:
-                if (rooms.isClientInRoom(id) || battles.isClientInBattle(id)) break;
                 matchmaking.queue(id);
                 break;
             case Events.ROOM_READY:
@@ -63,21 +64,12 @@ Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
     return response;
 });
 
-const env = `
-window.BIND = "${Deno.env.get("BIND")}";
-window.WEBSOCKET_PORT = ${Deno.env.get("WEBSOCKET_PORT")};
-`;
-
 Deno.serve({port: Number(Deno.env.get("WEBSERVER_PORT"))}, async (req) => {
-    const url = new URL(req.url);
-    switch (url.pathname) {
-    case "/":
+    if (new URL(req.url).pathname === "/") {
         return new Response(null, {
             status: 302,
             headers: {Location: "/index.html"},
         });
-    case "/Env.js":
-        return new Response(env, {headers: { "Content-Type": "application/javascript" }});
     }
 
     return await serveDir(req, {fsRoot: "./static"});

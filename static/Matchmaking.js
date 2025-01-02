@@ -17,7 +17,7 @@ socket.addEventListener("message", (event) => {
         const {type, data} = JSON.parse(event.data);
         switch (type) {
         case Events.UPDATE_CLIENT_ID:
-            document.cookie = `client_id=${data.id};path=/;SameSite=Strict`;
+            document.cookie = `client_id=${data.id};path=/;SameSite=Strict;Max-Age=31536000`;
             break;
         case Events.UPDATE_PLAYER_COUNT:
             updateNrPlayer(data.count);

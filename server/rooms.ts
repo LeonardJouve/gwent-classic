@@ -1,4 +1,3 @@
-import Battles from "./battles.ts";
 import Clients from "./clients.ts";
 import Events from "../static/Events.js";
 
@@ -6,12 +5,10 @@ type Room = Record<string, boolean>;
 
 export default class Rooms {
     private clients: Clients;
-    private battles: Battles;
     private rooms: Record<string, Room>;
 
-    constructor(clients: Clients, battles: Battles) {
+    constructor(clients: Clients) {
         this.clients = clients;
-        this.battles = battles;
         this.rooms = {};
     }
 
@@ -23,10 +20,6 @@ export default class Rooms {
         }, {});
 
         players.forEach((player) => this.clients.send(player, Events.MATCHMAKING_FOUND, {id}));
-    }
-
-    public isClientInRoom(id: string): boolean {
-        return Object.values(this.rooms).some((room) => id in room);
     }
 
     private getClientRoom(id: string): Room|null {
@@ -48,11 +41,10 @@ export default class Rooms {
         const room = this.getClientRoom(id);
         if (!room) return;
 
-        Object.keys(room).forEach((player) => {
-            if (player === id) return;
-
-            this.clients.send(player, Events.MATCH_WON, null);
-        });
+        const opponent = Object.keys(room).find((player) => player !== id);
+        if (opponent) {
+            this.clients.send(opponent, Events.MATCH_WON, null);
+        }
 
         this.removeRoom(room);
     }
@@ -64,9 +56,7 @@ export default class Rooms {
         room[id] = true;
 
         if (Object.values(room).every(Boolean)) {
-            this.battles.create(Object.keys(room));
+            // TODO
         }
-
-        this.removeRoom(room);
     }
 }
