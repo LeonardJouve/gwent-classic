@@ -3,38 +3,39 @@ import Events from "../static/Events.js";
 
 type Room = Record<string, boolean>;
 
+enum Faction {
+    NORTH,
+};
+
+type Opponent = {
+    name: string;
+    deck: Faction;
+};
+
 export default class Rooms {
     private clients: Clients;
-    private rooms: Record<string, Room>;
+    private rooms: Room[];
 
     constructor(clients: Clients) {
         this.clients = clients;
-        this.rooms = {};
+        this.rooms = [];
     }
 
     public create(players: string[]) {
-        const id = crypto.randomUUID();
-        this.rooms[id] = players.reduce<Room>((acc, player) => {
+        this.rooms.push(players.reduce<Room>((acc, player) => {
             acc[player] = false;
             return acc;
-        }, {});
+        }, {}));
 
-        players.forEach((player) => this.clients.send(player, Events.MATCHMAKING_FOUND, {id}));
+        players.forEach((player) => this.clients.send(player, Events.MATCHMAKING_FOUND, null));
     }
 
     private getClientRoom(id: string): Room|null {
-        return Object.values(this.rooms).find((room) => id in room) ?? null;
-    }
-
-    private getRoomId(room: Room): string|null {
-        return Object.entries((this.rooms)).find(([, r]) => r === room)?.[0] ?? null;
+        return this.rooms.find((room) => id in room) ?? null;
     }
 
     private removeRoom(room: Room) {
-        const roomId = this.getRoomId(room);
-        if (!roomId) return;
-
-        Reflect.deleteProperty(this.rooms, roomId);
+        this.rooms.splice(this.rooms.findIndex((r) => r === room), 1);
     }
 
     public leave(id: string) {
@@ -56,7 +57,8 @@ export default class Rooms {
         room[id] = true;
 
         if (Object.values(room).every(Boolean)) {
-            // TODO
+            // TODO: send opponent as data
+            Object.keys(room).forEach((player) => this.clients.send(player, Events.MATCH_BEGIN, null));
         }
     }
 }

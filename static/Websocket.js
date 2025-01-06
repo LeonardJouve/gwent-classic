@@ -1,6 +1,6 @@
 import Events from "./Events.js";
 
-const socket = new WebSocket(`ws://${window.BIND}:${window.WEBSOCKET_PORT}`);
+const socket = new WebSocket(`ws://${Env.BIND}:${Env.WEBSOCKET_PORT}`);
 
 socket.addEventListener("open", () => {
     addListeners();
@@ -16,14 +16,14 @@ socket.addEventListener("message", (event) => {
     try {
         const {type, data} = JSON.parse(event.data);
         switch (type) {
-        case Events.UPDATE_CLIENT_ID:
-            document.cookie = `client_id=${data.id};path=/;SameSite=Strict;Max-Age=31536000`;
-            break;
         case Events.UPDATE_PLAYER_COUNT:
-            updateNrPlayer(data.count);
+            updatePlayerCount(data.count);
             break;
         case Events.MATCHMAKING_FOUND:
-            window.location.assign(`/gwent.html?id=${data.id}`);
+            // TODO
+            break;
+        case Events.MATCH_BEGIN:
+            // TODO
             break;
         }
     } catch (e) {
@@ -38,16 +38,10 @@ function send(type, data) {
     }));
 }
 
-function handleRename() {
-    const name = document.getElementById("name");
-    if (!name) return;
-
-    send(Events.RENAME, {name: name.value});
-}
-
 function handleMatchmaking() {
+    const name = document.getElementById("name");
     const matchmaking = document.getElementById("matchmaking");
-    if (!matchmaking) return;
+    if (!matchmaking || !name) return;
 
     if (matchmaking.className.includes(" queued")) {
         matchmaking.className = matchmaking.className.replace(" queued", "");
@@ -55,28 +49,24 @@ function handleMatchmaking() {
         matchmaking.className += " queued"
     }
 
-    send(Events.MATCHMAKING_QUEUE, null);
+    send(Events.MATCHMAKING_QUEUE, {name: name.value ? name.value : null});
 }
 
 function addListeners() {
-    const name = document.getElementById("name");
     const matchmaking = document.getElementById("matchmaking");
-    if (!name || !matchmaking) return;
+    if (!matchmaking) return;
 
-    name.addEventListener("blur", handleRename);
     matchmaking.addEventListener("click", handleMatchmaking);
 }
 
 function removeListeners() {
-    const name = document.getElementById("name");
     const matchmaking = document.getElementById("matchmaking");
-    if (!name || !matchmaking) return;
+    if (!matchmaking) return;
 
-    name.removeEventListener("blur", handleRename);
     matchmaking.removeEventListener("click", handleMatchmaking);
 }
 
-function updateNrPlayer(count) {
+function updatePlayerCount(count) {
     const nrPlayerOnline = document.getElementById("nr-player-online");
     if (!nrPlayerOnline) return;
 

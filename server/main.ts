@@ -10,8 +10,10 @@ const rooms = new Rooms(clients);
 const matchmaking = new Matchmaking(rooms);
 
 Deno.writeTextFileSync("./static/Env.js", `
-window.BIND = "${Deno.env.get("BIND")}";
-window.WEBSOCKET_PORT = ${Deno.env.get("WEBSOCKET_PORT")};
+const Env = {
+    BIND: "${Deno.env.get("BIND")}",
+    WEBSOCKET_PORT: ${Deno.env.get("WEBSOCKET_PORT")},
+}
 `);
 
 Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
@@ -22,14 +24,8 @@ Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
     const {socket, response} = Deno.upgradeWebSocket(req);
     let id: string|null = null;
 
-    const cookieHeader = req.headers.get("cookie");
-    if (cookieHeader) {
-        const cookies = Object.fromEntries(cookieHeader.split("; ").map(cookie => cookie.split("=")));
-        id = cookies["client_id"];
-    }
-
     socket.addEventListener("open", () => {
-        id = clients.add(socket, id);
+        id = clients.add(socket);
     });
 
     socket.addEventListener("close", () => {
@@ -46,13 +42,13 @@ Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
         try {
             const {type, data} = JSON.parse(event.data);
             switch (type) {
-            case Events.RENAME:
-                clients.rename(id, data.name);
-                break;
             case Events.MATCHMAKING_QUEUE:
+                if (data.name) {
+                    clients.rename(id, data.name);
+                }
                 matchmaking.queue(id);
                 break;
-            case Events.ROOM_READY:
+            case Events.MATCH_READY:
                 rooms.setReady(id);
                 break;
             }

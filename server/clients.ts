@@ -12,10 +12,8 @@ export default class Clients {
         this.clients = {};
     }
 
-    public add(socket: WebSocket, id: string|null): string {
-        if (id === null || !this.clients[id]) {
-            id = crypto.randomUUID();
-        }
+    public add(socket: WebSocket): string {
+        const id = crypto.randomUUID();
 
         this.clients[id] = {
             socket,
@@ -23,7 +21,6 @@ export default class Clients {
         };
 
         this.updatePlayerCount();
-        this.send(id, Events.UPDATE_CLIENT_ID, {id});
 
         return id;
     }

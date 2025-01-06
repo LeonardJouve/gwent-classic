@@ -1,2 +1,4 @@
-window.BIND = "";
-window.WEBSOCKET_PORT = 0;
+const Env {
+    BIND: "",
+    WEBSOCKET_PORT: 0,
+};
