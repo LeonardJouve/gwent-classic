@@ -1,35 +1,35 @@
-import Events from "./Events.js";
-
 const socket = new WebSocket(`ws://${Env.BIND}:${Env.WEBSOCKET_PORT}`);
 
+let listenersOnce = [];
+const listeners = [{
+    event: Events.UPDATE_PLAYER_COUNT,
+    listener: updatePlayerCount,
+}];
+
 socket.addEventListener("open", () => {
-    addListeners();
-    setOnline();
+    toggleOnline();
 });
 
 socket.addEventListener("close", () => {
-    removeListeners();
-    setOffline();
+    toggleOnline();
 });
 
 socket.addEventListener("message", (event) => {
     try {
-        const {type, data} = JSON.parse(event.data);
-        switch (type) {
-        case Events.UPDATE_PLAYER_COUNT:
-            updatePlayerCount(data.count);
-            break;
-        case Events.MATCHMAKING_FOUND:
-            // TODO
-            break;
-        case Events.MATCH_BEGIN:
-            // TODO
-            break;
-        }
+        const data = JSON.parse(event.data);
+        listenersOnce = listenersOnce.filter((listener) => handleListener(listener, data));
+        listeners.forEach((listener) => handleListener(listener, data));
     } catch (e) {
         console.error(e);
     }
 });
+
+function handleListener({event, listener}, {type, data}) {
+    if (event !== type) return true;
+    listener(data);
+
+    return false;
+}
 
 function send(type, data) {
     socket.send(JSON.stringify({
@@ -38,78 +38,32 @@ function send(type, data) {
     }));
 }
 
-function handleMatchmaking() {
-    const name = document.getElementById("name");
-    const matchmaking = document.getElementById("matchmaking");
-    if (!matchmaking || !name) return;
-
-    if (matchmaking.className.includes(" queued")) {
-        matchmaking.className = matchmaking.className.replace(" queued", "");
+function toggleClass(element, className) {
+    if (element.className.includes(" " + className)) {
+        element.className = element.className.replace(" " + className, "");
     } else {
-        matchmaking.className += " queued"
+        element.className += " " + className;
     }
-
-    send(Events.MATCHMAKING_QUEUE, {name: name.value ? name.value : null});
 }
 
-function addListeners() {
-    const matchmaking = document.getElementById("matchmaking");
-    if (!matchmaking) return;
-
-    matchmaking.addEventListener("click", handleMatchmaking);
-}
-
-function removeListeners() {
-    const matchmaking = document.getElementById("matchmaking");
-    if (!matchmaking) return;
-
-    matchmaking.removeEventListener("click", handleMatchmaking);
-}
-
-function updatePlayerCount(count) {
-    const nrPlayerOnline = document.getElementById("nr-player-online");
+function updatePlayerCount(data) {
+    const nrPlayerOnline = document.getElementById("player-count");
     if (!nrPlayerOnline) return;
 
-    nrPlayerOnline.textContent = count;
+    nrPlayerOnline.textContent = data.count;
 }
 
-function setOffline() {
+function toggleOnline() {
     const serverStatus = document.getElementById("server-status");
     if (!serverStatus) return;
 
-    serverStatus.className = "status-offline";
-    serverStatus.textContent = "Offline";
-
-    const playerOnline = document.getElementById("player-online");
-    const playerOnlineBreak = document.getElementById("player-online-break");
-    if (!playerOnline || !playerOnlineBreak) return;
-
-    playerOnline.remove();
-    playerOnlineBreak.remove();
+    toggleClass(serverStatus, "online");
 }
 
-function setOnline() {
-    const container = document.getElementById("teaser-landing");
-    const serverStatus = document.getElementById("server-status");
-    const serverStatusContainer = document.getElementById("server-status-container");
-    if (!container || !serverStatus || !serverStatusContainer) return;
+function listenOnce(event, listener) {
+    listenersOnce.push({event, listener});
+}
 
-    serverStatus.className = "status-online";
-    serverStatus.textContent = "Online";
-
-    const nrOnline = document.createElement("span");
-    nrOnline.className = "nr-player-online";
-    nrOnline.id = "nr-player-online";
-    nrOnline.textContent = "0";
-
-    const playerOnline = document.createElement("span");
-    playerOnline.textContent = "Player online: ";
-    playerOnline.id = "player-online";
-    playerOnline.appendChild(nrOnline);
-
-    const playerOnlineBreak = document.createElement("br");
-    playerOnlineBreak.id = "player-online-break";
-
-    container.insertBefore(playerOnlineBreak, serverStatusContainer);
-    container.insertBefore(playerOnline, playerOnlineBreak);
+function addListener(event, listener) {
+    listeners.push({event, listener});
 }

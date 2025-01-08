@@ -71,7 +71,7 @@ html {
 	width: 4.45vw;
 	top:-7vw;
 	left: 33vw;
-	
+
 	border: 1px solid blue;
 }
 
@@ -98,9 +98,9 @@ html {
     text-shadow: 0 0 2vw black;
 	z-index: 86;
 }
-.music-customization { 
+.music-customization {
 	transform: translate(22.5vw, -0.5vw);
-}	
+}
 
 /* ----------- notification bar ------------------ */
 
@@ -113,7 +113,7 @@ html {
 	z-index: 100;
 }
 
-#notification-bar > div { 
+#notification-bar > div {
 	width: 22.1%;
 	height: 207.25%;
 	top: -66.6%;
@@ -155,7 +155,7 @@ html {
 #notif-op-pass { background-image: url('assets/img/icons/notif_round_passed.png'); }
 #notif-op-pass::after { content:"Your opponent has passed"; }
 
-#notif-win-round { background-image: url('assets/img/icons/notif_win_round.png'); } 
+#notif-win-round { background-image: url('assets/img/icons/notif_win_round.png'); }
 #notif-win-round::after { content:"You won the round!"; }
 
 #notif-lose-round { background-image: url('assets/img/icons/notif_lose_round.png'); }
@@ -164,7 +164,7 @@ html {
 #notif-draw-round { background-image: url('assets/img/icons/notif_draw_round.png'); }
 #notif-draw-round::after {content:"The round ended in a draw"; }
 
-#notif-me-turn { background-image: url('assets/img/icons/notif_me_turn.png'); } 
+#notif-me-turn { background-image: url('assets/img/icons/notif_me_turn.png'); }
 #notif-me-turn::after { content:"Your turn!"; }
 
 #notif-op-turn { background-image: url('assets/img/icons/notif_op_turn.png'); }
@@ -202,7 +202,7 @@ html {
 	height: 30.4vw;
 	width: 16.1vw;
 	border-radius: 1.5vw;
-	
+
 	background-size: contain;
 	background-position:center;
 }
@@ -233,14 +233,14 @@ html {
 
 .card-description > h1 {
 	font-weight: bold;
-	
+
 	top: 0.5vw;
 	left: 16%;
 	height: 16%;
 	width: 70%;
 	margin-bottom: -2.1vw;
 	text-transform: capitalize;
-	
+
 	font-size: 1vw;
 }
 
@@ -249,7 +249,7 @@ html {
 	left: 5%;
 	width: 90%;
 	height:50%;
-	
+
 	font-size: 0.9vw;
 }
 
@@ -277,9 +277,9 @@ html {
 #carousel > :nth-child(1) {
 	wdith:100%;
 	heigth:100%;
-	
+
 	padding: 11.5% 10%;
-	
+
 	display:flex;
 	align-items: flex-start;
 	justify-content: space-between;
@@ -484,7 +484,7 @@ html {
 	box-sizing: border-box;
 	overflow-y: hidden;
 	overflow-x: visible;
-	
+
 	/*new values*/
 	overflow-y: visible;
 	position:absolute;
@@ -531,7 +531,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 /* -------------------- left panel ----------------------- */
 
 #weather {
-	top: 41.25%; 
+	top: 41.25%;
 	left: 27.9%;
 	width: 54.9%;
 	height: 12.75%;
@@ -554,7 +554,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	height: 100%;
 	width: 63%;
 	margin-bottom: -80%;
-	
+
 	/* replace it html with center class */
 	display:flex;
 	flex-items:center;
@@ -616,7 +616,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	width: 21.9%;
 	height: 80%;
 	margin-bottom: -24%;
-	
+
 	background-image: url('assets/img/icons/profile.png');
 	background-size: contain;
 	background-repeat: no-repeat;
@@ -642,7 +642,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	height: 43%;
 	left: -10.5%;
 	top: .5%;
-	
+
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: center;
@@ -657,16 +657,16 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	left: 94.5%;
 	height: 40%;
 	width: 12%;
-	
+
 	top:31%;
-	
+
 	margin-bottom: -12%;
-	
+
 	color: black;
 	text-shadow: 0 0 5px white;
 	font-size: 2.3vw;
 	font-weight: bold;
-	
+
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: center;
@@ -702,15 +702,15 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	font-size: 1.7vw;
 	font-weight: bold;
 	padding-left: 7%;
-	
-	
-	
+
+
+
 	background-image: url('assets/img/icons/icon_card_count.png');
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: left;
-	
-	
+
+
 }
 
 #hand-count-me {
@@ -758,7 +758,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	white-space: nowrap;
 	font-size: 1.1vw;
 	font-weight: bold;
-	
+
 	/*font-family: Arial Narrow, sans-serif;*/
 }
 
@@ -774,7 +774,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	margin-bottom: -6%;
 	overflow: hidden;
 	text-transform:capitalize;
-	
+
 	color: tan;
 	font-size: .95vw;
 	/*font-family: Arial Narrow, sans-serif;*/
@@ -789,7 +789,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	width: 0%;
 	left:90%;
 	top: 87%;
-	
+
 	color: tan;
 	font-size: 1.5vw;
 	font-weight: bold;
@@ -802,10 +802,10 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	left: 63%;
 	width:20%;
 	height: 4%;
-	
+
 	font-size: 2vw;
 	font-weight: bold;
-	
+
 	border: .1vw solid goldenrod;
 	border-radius: .5vw;
 	background-color: rgba(20,20,20,.9);
@@ -856,7 +856,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	height: 95%;
 	margin-bottom: -12.65%;
 	font-size: 1.8vw;
-	
+
 	color: black;
 	text-shadow: 0 0 5px white;
 }
@@ -883,9 +883,9 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	left: 5.75%;
 	width: 94.25%;
 	height: 100%;
-	
+
 	pointer-events : none;
-	
+
 	background-size: cover;
 	background-position: bottom;
 	background-repeat: no-repeat;
@@ -924,7 +924,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 #hand-row > .card {
 	position: relative;
 	position: absolute;
-	
+
 	height: 100%;
 	width: 9.35%;
 }
@@ -936,7 +936,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	width: 27.6%;
 	height: 13.5%;
 	margin-bottom: -36.25%;
-	
+
 	display:flex;
 	flex-direction:column-reverse;
 	align-items: center;
@@ -971,7 +971,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 .deck-card {
 	position: relative;
 	display: inline-block;
-	
+
 	height: 6.675vw;
 	width: 4.45vw;
 
@@ -983,12 +983,12 @@ main { background-image: url('assets/img/boardtest8.png'); }
 .deck-counter {
 	position: relative;
 	background-color: rgba(20,20,20, 0.8);
-	
+
 	width: 3vw;
 	height: 2vw;
-	
+
 	z-index: 1;
-	
+
 	color:tan;
 	font-size: 1.3vw;
 }
@@ -1029,11 +1029,11 @@ main { background-image: url('assets/img/boardtest8.png'); }
     line-height: 220%;
     text-transform: capitalize;
     padding: 0 3%;
-	
 
-	
+
+
 	top: -60%;
-	
+
     background-size: contain;
     background-repeat: no-repeat;
 }
@@ -1130,7 +1130,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	position: relative;
 	height: 84.5%;
 	margin-top: 24.5%;
-	
+
 	background-size: contain;
 	border-radius: .5vw;
 }
@@ -1157,7 +1157,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	padding-left: 2.3vw;
 	margin-left: 3.95vw;
 	margin-bottom: -6.75%;
-	
+
 	background-repeat: no-repeat;
 	background-position: left;
 	background-size: 2.5vw;
@@ -1206,22 +1206,22 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	/*height: 100%;
 	width: auto;*/
 	/*width: calc(100% * 775 / 410);*/
-	
+
 	height: 6.35vw;
 	width: 4.45vw;
-	
+
 	background-size:contain;
 	background-repeat: no-repeat;
-	
+
 	box-shadow: -.1vw -.1vw .5vw rgba(20,20,20, 0.5);
-	
+
 	display: inline-block;
-	
+
 	/*position: absolute;*/
 	position: relative;
-	
+
 	transition: margin-bottom 0.05s, margin-left .25s, margin-right .25s, transform 0.5s;
-	
+
 	z-index: 1;
 }
 
@@ -1239,9 +1239,9 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	width: 70%;
 	height: 50%;
 	margin-bottom: -71%;
-	
+
 	background-position: 0 0;
-	
+
 }
 
 .card > div:nth-child(1) > div {
@@ -1277,7 +1277,7 @@ main { background-image: url('assets/img/boardtest8.png'); }
 	width: 33%;
 	height: 22%;
 	margin-bottom: -32%;
-	
+
 	font-size: 1vw;
 	/*border: 1px solid red;*/
 }
@@ -1324,4 +1324,47 @@ main { background-image: url('assets/img/boardtest8.png'); }
 
 .noclick {
 	pointer-events: none;
+}
+
+.spinner {
+    display: flex;
+    width: 1em;
+    height: 1em;
+    border: 1px solid black;
+    border-top: 1px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.find-game:not(.queued) .spinner {
+    display: none;
+}
+
+.server-status:not(.online) .player-count {
+    display: none;
+}
+
+.server-status:not(.online) .status-online {
+    display: none;
+}
+
+.server-status.online .status-offline {
+    display: none;
+}
+
+.status-online {
+    color: green;
+}
+
+.status-offline {
+    color: red;
 }

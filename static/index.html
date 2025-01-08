@@ -274,22 +274,33 @@
 	</div>
 	<button id="start-game">Start game</button>
 
-    <input id="name" type="text" placeholder="Username" class="field-session field-username name-input">
+    <input id="name" type="text" placeholder="Username">
 
-    <div id="matchmaking" class="wrap-btn-action btn-register-action startMatchmaking">
-        <input type="submit" value="Search Opponent" class="btn-action">
-        <i class="icon-action-load image-gif-loader"></i>
-    </div>
+    <button id="find-game" class="find-game">
+        Find game
+        <i class="spinner"></i>
+    </button>
 
-    <p id="teaser-landing" class="teaser-landing">
-        <span id="server-status-container">Server Status: <span id="server-status" class="status-offline">Offline</span></span>
+    <span id="server-status" class="server-status">
+        <span id="player-count" class="player-count">
+            <br/>
+        </span>
+        Server Status:
+        <span class="status-online">
+            Online
+        </span>
+        <span class="status-offline">
+            Offline
+        </span>
+    </span>
     </p>
 </section>
 
 <div id="toggle-music" class="center music-customization">♫</div>
 
 <script type="text/javascript" src="Env.js"></script>
-<script type="module" src="Websocket.js"></script>
+<script type="text/javascript" src="Events.js"></script>
+<script type="text/javascript" src="Websocket.js"></script>
 <script type="text/javascript" src="assets/js/cards.js"></script>
 <script type="text/javascript" src="assets/js/decks.js"></script>
 <script type="text/javascript" src="assets/js/abilities.js"></script>

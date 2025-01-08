@@ -1,9 +1,9 @@
 import {serveDir} from "jsr:@std/http/file-server";
 
-import Events from "../static/Events.js";
 import Clients from "./clients.ts";
 import Matchmaking from "./matchmaking.ts";
 import Rooms from "./rooms.ts";
+import events from "./events.ts";
 
 const clients = new Clients();
 const rooms = new Rooms(clients);
@@ -13,7 +13,13 @@ Deno.writeTextFileSync("./static/Env.js", `
 const Env = {
     BIND: "${Deno.env.get("BIND")}",
     WEBSOCKET_PORT: ${Deno.env.get("WEBSOCKET_PORT")},
-}
+};
+`);
+
+Deno.writeTextFileSync("./static/Events.js", `
+const Events = {
+    ${Object.entries(events).map(([key, value]) => `${key}: "${value}",`).join("\n    ")}
+};
 `);
 
 Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
@@ -42,13 +48,13 @@ Deno.serve({port: Number(Deno.env.get("WEBSOCKET_PORT"))}, (req) => {
         try {
             const {type, data} = JSON.parse(event.data);
             switch (type) {
-            case Events.MATCHMAKING_QUEUE:
+            case events.MATCHMAKING_QUEUE:
                 if (data.name) {
                     clients.rename(id, data.name);
                 }
                 matchmaking.queue(id);
                 break;
-            case Events.MATCH_READY:
+            case events.MATCH_READY:
                 rooms.setReady(id);
                 break;
             }

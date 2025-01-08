@@ -1,6 +1,6 @@
 {
     "tasks": {
-        "start": "deno run --allow-read=./static --allow-write=./static/Env.js --env-file --allow-env --allow-net server/main.ts"
+        "start": "deno run --allow-read=./static --allow-write=./static/Env.js --allow-write=./static/Events.js --env-file --allow-env --allow-net server/main.ts"
     },
     "exclude": [
         "static/"

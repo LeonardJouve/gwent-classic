@@ -22,7 +22,8 @@ class DeckMaker {
 
         document.getElementById("download-deck").addEventListener("click", () => this.downloadDeck(), false);
         document.getElementById("add-file").addEventListener("change", () => this.uploadDeck(), false);
-        document.getElementById("start-game").addEventListener("click", () => this.startNewGame(), false);
+        document.getElementById("start-game").addEventListener("click", () => this.startNewGame(false), false);
+        document.getElementById("find-game").addEventListener("click", () => this.startNewGame(true), false);
 
         this.update();
     }
@@ -251,7 +252,7 @@ class DeckMaker {
     }
 
     // Verifies current deck, creates the players and their decks, then starts a new game
-    startNewGame() {
+    startNewGame(isOnline) {
         let warning = "";
         if (this.stats.units < 22)
             warning += "Your deck must have at least 22 unit cards. \n";
@@ -260,28 +261,48 @@ class DeckMaker {
         if (warning != "")
             return alert(warning);
 
-        let me_deck = {
-            faction: this.faction,
-            leader: card_dict[this.leader.index],
-            cards: this.deck.filter(x => x.count > 0)
+        game.setOnline(isOnline);
+
+        if (isOnline) {
+            const name = document.getElementById("name");
+            const findGame = document.getElementById("find-game");
+            if (!findGame || !name) return;
+
+            toggleClass(findGame, "queued");
+
+            send(Events.MATCHMAKING_QUEUE, {name: name.value});
+        }
+
+        const execute = () => {
+            let me_deck = {
+                faction: this.faction,
+                leader: card_dict[this.leader.index],
+                cards: this.deck.filter(x => x.count > 0)
+            };
+
+            let op_deck = JSON.parse(premade_deck[randomInt(Object.keys(premade_deck).length)]);
+            op_deck.cards = op_deck.cards.map(c => ({
+                index: c[0],
+                count: c[1]
+            }));
+            //op_deck.leader = card_dict[op_deck.leader];
+
+            let leaders = card_dict.filter(c => c.row === "leader" && c.deck === op_deck.faction);
+            op_deck.leader = leaders[randomInt(leaders.length)];
+            //op_deck.leader = card_dict.filter(c => c.row === "leader")[12];
+
+            player_me = new Player(0, "Player 1", me_deck);
+            player_op = new Player(1, "Player 2", op_deck);
+
+            this.elem.classList.add("hide");
+            game.startGame();
         };
 
-        let op_deck = JSON.parse(premade_deck[randomInt(Object.keys(premade_deck).length)]);
-        op_deck.cards = op_deck.cards.map(c => ({
-            index: c[0],
-            count: c[1]
-        }));
-        //op_deck.leader = card_dict[op_deck.leader];
-
-        let leaders = card_dict.filter(c => c.row === "leader" && c.deck === op_deck.faction);
-        op_deck.leader = leaders[randomInt(leaders.length)];
-        //op_deck.leader = card_dict.filter(c => c.row === "leader")[12];
-
-        player_me = new Player(0, "Player 1", me_deck);
-        player_op = new Player(1, "Player 2", op_deck);
-
-        this.elem.classList.add("hide");
-        game.startGame();
+        if (isOnline) {
+            listenOnce(Events.MATCHMAKING_FOUND, execute);
+        } else {
+            execute();
+        }
     }
 
     // Converts the current deck to a JSON string

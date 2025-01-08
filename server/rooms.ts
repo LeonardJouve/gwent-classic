@@ -1,5 +1,6 @@
 import Clients from "./clients.ts";
-import Events from "../static/Events.js";
+import events from "./events.ts";
+
 
 type Room = Record<string, boolean>;
 
@@ -27,7 +28,7 @@ export default class Rooms {
             return acc;
         }, {}));
 
-        players.forEach((player) => this.clients.send(player, Events.MATCHMAKING_FOUND, null));
+        players.forEach((player) => this.clients.send(player, events.MATCHMAKING_FOUND, null));
     }
 
     private getClientRoom(id: string): Room|null {
@@ -44,7 +45,7 @@ export default class Rooms {
 
         const opponent = Object.keys(room).find((player) => player !== id);
         if (opponent) {
-            this.clients.send(opponent, Events.MATCH_WON, null);
+            this.clients.send(opponent, events.MATCH_WON, null);
         }
 
         this.removeRoom(room);
@@ -58,7 +59,7 @@ export default class Rooms {
 
         if (Object.values(room).every(Boolean)) {
             // TODO: send opponent as data
-            Object.keys(room).forEach((player) => this.clients.send(player, Events.MATCH_BEGIN, null));
+            Object.keys(room).forEach((player) => this.clients.send(player, events.MATCH_BEGIN, null));
         }
     }
 }

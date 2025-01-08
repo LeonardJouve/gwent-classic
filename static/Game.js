@@ -1,5 +1,6 @@
 class Game {
     constructor() {
+        this.online = false;
         this.endScreen = document.getElementById("end-screen");
         let buttons = this.endScreen.getElementsByTagName("button");
         this.customize_elem = buttons[0];
@@ -10,6 +11,7 @@ class Game {
     }
 
     reset() {
+        this.online = false;
         this.firstPlayer;
         this.currPlayer = null;
 
@@ -27,6 +29,14 @@ class Game {
 
         weather.reset();
         board.row.forEach(r => r.reset());
+    }
+
+    setOnline(isOnline) {
+        this.online = isOnline;
+    }
+
+    isOnline() {
+        return this.online;
     }
 
     // Sets up player faction abilities and psasive leader abilities
@@ -84,8 +94,19 @@ class Game {
         for (let i = 0; i < 2; i++)
             player_op.controller.redraw();
         await ui.queueCarousel(player_me.hand, 2, async (c, i) => await player_me.deck.swap(c, c.removeCard(i)), c => true, true, true, "Choose up to 2 cards to redraw.");
-        ui.enablePlayer(false);
-        game.startRound();
+
+        const execute = () => {
+            ui.enablePlayer(false);
+            game.startRound();
+        };
+
+        if (this.isOnline()) {
+            listenOnce(Events.MATCH_BEGIN, execute);
+            send(Events.MATCH_READY, null);
+        } else {
+            execute();
+        }
+
     }
 
     // Initiates a new round of the game

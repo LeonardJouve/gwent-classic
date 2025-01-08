@@ -1,7 +1,7 @@
-import Events from "../static/Events.js";
+import events from "./events.ts";
 
 type Client = {
-    socket: WebSocket|null;
+    socket: WebSocket;
     name: string;
 };
 
@@ -17,7 +17,7 @@ export default class Clients {
 
         this.clients[id] = {
             socket,
-            name: this.clients[id]?.name ?? "Guest",
+            name: "Guest",
         };
 
         this.updatePlayerCount();
@@ -26,12 +26,12 @@ export default class Clients {
     }
 
     public remove(id: string) {
-        this.clients[id].socket = null;
+        Reflect.deleteProperty(this.clients, id);
         this.updatePlayerCount();
     }
 
     private updatePlayerCount() {
-        this.broadcast(Events.UPDATE_PLAYER_COUNT, {count: Object.values(this.clients).filter(({socket}) => socket !== null).length});
+        this.broadcast(events.UPDATE_PLAYER_COUNT, {count: Object.keys(this.clients).length});
     }
 
     public rename(id: string, name: string) {
@@ -49,7 +49,7 @@ export default class Clients {
         const client = this.clients[id];
         if (!client) return;
 
-        client.socket?.send(JSON.stringify({
+        client.socket.send(JSON.stringify({
             type,
             data,
         }));
