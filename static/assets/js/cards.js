@@ -44,7 +44,7 @@ var card_dict = JSON.parse(
 			'"strength" : "",' + 
 			'"ability" : "clear",' + 
 			'"filename" : "clear",' + 
-			'"count" : "2"' + 
+			'"count" : "3"' + 
 		'}, {' + 
 			'"name" : "Commander\'s Horn",' + 
 			'"id" : "2",' + 
@@ -107,7 +107,7 @@ var card_dict = JSON.parse(
 			'"strength" : "",' + 
 			'"ability" : "rain",' + 
 			'"filename" : "rain",' + 
-			'"count" : "2"' + 
+			'"count" : "3"' + 
 		'}, {' + 
 			'"name" : "Triss Merigold",' + 
 			'"id" : "141",' + 
@@ -251,15 +251,6 @@ var card_dict = JSON.parse(
 			'"strength" : "6",' + 
 			'"ability" : "",' + 
 			'"filename" : "ballista",' + 
-			'"count" : "1"' + 
-		'}, {' + 
-			'"name" : "Ballista",' + 
-			'"id" : "250",' + 
-			'"deck" : "realms",' + 
-			'"row" : "siege",' + 
-			'"strength" : "6",' + 
-			'"ability" : "",' + 
-			'"filename" : "ballista_2",' + 
 			'"count" : "1"' + 
 		'}, {' + 
 			'"name" : "Blue Stripes Commando",' + 
@@ -1934,6 +1925,15 @@ var card_dict = JSON.parse(
 			'"strength" : "8",' + 
 			'"ability" : "scorch_s",' + 
 			'"filename" : "schirru",' + 
+			'"count" : "1"' + 
+		'}, {' + 
+			'"name" : "Ballista",' + 
+			'"id" : "250",' + 
+			'"deck" : "realms",' + 
+			'"row" : "siege",' + 
+			'"strength" : "6",' + 
+			'"ability" : "",' + 
+			'"filename" : "ballista_2",' + 
 			'"count" : "1"' + 
 		'}' +
 	']'
