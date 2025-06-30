@@ -8,27 +8,27 @@ class Game {
 		this.replay_elem.addEventListener("click", () => this.restartGame(), false);
 		this.reset();
 	}
-	
+
 	reset() {
 		this.firstPlayer;
 		this.currPlayer = null;
-		
+
 		this.gameStart = [];
 		this.roundStart = [];
 		this.roundEnd = [];
 		this.turnStart = [];
 		this.turnEnd = [];
-		
+
 		this.roundCount = 0;
 		this.roundHistory = [];
-		
+
 		this.randomRespawn = false;
 		this.doubleSpyPower = false;
-		
+
 		weather.reset();
 		board.row.forEach(r => r.reset());
 	}
-	
+
 	// Sets up player faction abilities and psasive leader abilities
 	initPlayers(p1, p2){
 		let l1 = ability_dict[p1.leader.abilities[0]];
@@ -44,19 +44,19 @@ class Game {
 			return;
 		initFaction(p1);
 		initFaction(p2);
-		
+
 		function initLeader(player, leader){
 			if (leader.placed)
 				leader.placed(player.leader);
 			Object.keys(leader).filter(key => game[key]).map(key => game[key].push(leader[key]));
 		}
-		
+
 		function initFaction(player){
 			if (factions[player.deck.faction] && factions[player.deck.faction].factionAbility)
 				factions[player.deck.faction].factionAbility(player);
 		}
 	}
-	
+
 	// Sets initializes player abilities, player hands and redraw
 	async startGame() {
 		ui.toggleMusic_elem.classList.remove("music-customization");
@@ -65,20 +65,20 @@ class Game {
 			await player_me.deck.draw(player_me.hand);
 			await player_op.deck.draw(player_op.hand);
 		}));
-		
+
 		await this.runEffects(this.gameStart);
 		if (!this.firstPlayer)
 			this.firstPlayer = await this.coinToss();
 		this.initialRedraw();
 	}
-	
+
 	// Simulated coin toss to determine who starts game
 	async coinToss(){
 		this.firstPlayer = (Math.random() < 0.5) ? player_me : player_op;
 		await ui.notification(this.firstPlayer.tag + "-coin", 1200);
 		return this.firstPlayer;
 	}
-	
+
 	// Allows the player to swap out up to two cards from their iniitial hand
 	async initialRedraw(){
 		for (let i=0; i< 2; i++)
@@ -87,31 +87,31 @@ class Game {
 		ui.enablePlayer(false);
 		game.startRound();
 	}
-	
+
 	// Initiates a new round of the game
 	async startRound(){
 		this.roundCount++;
 		this.currPlayer = (this.roundCount%2 === 0) ? this.firstPlayer : this.firstPlayer.opponent();
 		await this.runEffects(this.roundStart);
-		
+
 		if ( !player_me.canPlay() )
 			player_me.setPassed(true);
 		if ( !player_op.canPlay() )
 			player_op.setPassed(true);
-		
+
 		if (player_op.passed && player_me.passed)
 			return this.endRound();
-		
+
 		if (this.currPlayer.passed)
 			this.currPlayer = this.currPlayer.opponent();
-		
+
 		await ui.notification("round-start", 1200);
 		if (this.currPlayer.opponent().passed)
 			await ui.notification(this.currPlayer.tag + "-turn", 1200);
-		
+
 		this.startTurn();
 	}
-	
+
 	// Starts a new turn. Enables client interraction in client's turn.
 	async startTurn() {
 		await this.runEffects(this.turnStart);
@@ -122,7 +122,7 @@ class Game {
 		ui.enablePlayer(this.currPlayer === player_me);
 		this.currPlayer.startTurn();
 	}
-	
+
 	// Ends the current turn and may end round. Disables client interraction in client's turn.
 	async endTurn() {
 		if (this.currPlayer === player_me)
@@ -135,7 +135,7 @@ class Game {
 		else
 			this.startTurn();
 	}
-	
+
 	// Ends the round and may end the game. Determines final scores and the round winner.
 	async endRound() {
 		let dif = player_me.total - player_op.total;
@@ -146,44 +146,44 @@ class Game {
 		let winner = dif > 0 ? player_me : dif < 0 ? player_op : null;
 		let verdict = {winner: winner, score_me: player_me.total, score_op: player_op.total}
 		this.roundHistory.push(verdict);
-		
+
 		await this.runEffects(this.roundEnd);
-		
+
 		board.row.forEach( row => row.clear() );
 		weather.clearWeather();
-		
+
 		player_me.endRound( dif > 0);
 		player_op.endRound( dif < 0);
-		
+
 		if (dif > 0)
 			await ui.notification("win-round", 1200);
 		else if (dif < 0)
 			await ui.notification("lose-round", 1200);
 		else
 			await ui.notification("draw-round", 1200);
-		
+
 		if (player_me.health === 0 || player_op.health === 0)
 			this.endGame();
 		else
 			this.startRound();
 	}
-	
+
 	// Sets up and displays the end-game screen
 	async endGame() {
 		let endScreen = document.getElementById("end-screen");
 		let rows = endScreen.getElementsByTagName("tr");
 		rows[1].children[0].innerHTML = player_me.name;
 		rows[2].children[0].innerHTML = player_op.name;
-		
+
 		for (let i=1; i<4; ++i) {
 			let round = this.roundHistory[i-1];
 			rows[1].children[i].innerHTML = round ? round.score_me : 0;
 			rows[1].children[i].style.color = round && round.winner === player_me ? "goldenrod" : "";
-			
+
 			rows[2].children[i].innerHTML = round ? round.score_op : 0;
 			rows[2].children[i].style.color = round && round.winner === player_op ? "goldenrod" : "";
 		}
-		
+
 		endScreen.children[0].className = "";
 		if (player_op.health <= 0 && player_me.health <= 0) {
 			endScreen.getElementsByTagName("p")[0].classList.remove("hide");
@@ -193,11 +193,11 @@ class Game {
 		} else {
 			endScreen.children[0].classList.add("end-lose");
 		}
-		
+
 		fadeIn(endScreen, 300);
 		ui.enablePlayer(true);
 	}
-	
+
 	// Returns the client to the deck customization screen
 	returnToCustomization(){
 		this.reset();
@@ -207,7 +207,7 @@ class Game {
 		this.endScreen.classList.add("hide");
 		document.getElementById("deck-customization").classList.remove("hide");
 	}
-	
+
 	// Restarts the last game with the dame decks
 	restartGame(){
 		this.reset();
@@ -216,7 +216,7 @@ class Game {
 		this.endScreen.classList.add("hide");
 		this.startGame();
 	}
-	
+
 	// Executes effects in list. If effect returns true, effect is removed.
 	async runEffects(effects){
 		for (let i=effects.length-1; i>=0; --i){
@@ -225,7 +225,7 @@ class Game {
 				effects.splice(i,1)
 		}
 	}
-	
+
 }
 
 // Contians information and behavior of a Card

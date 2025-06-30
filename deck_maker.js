@@ -5,25 +5,25 @@ class DeckMaker {
 		this.deck_elem = document.getElementById("card-deck");
 		this.leader_elem = document.getElementById("card-leader");
 		this.leader_elem.children[1].addEventListener("click", () => this.selectLeader(), false);
-		
+
 		this.faction = "realms";
 		this.setFaction(this.faction, true);
-		
+
 		let start_deck = JSON.parse(premade_deck[0]);
 		start_deck.cards = start_deck.cards.map(c => ({index: c[0], count: c[1]}) );
 		this.setLeader(start_deck.leader);
 		this.makeBank(this.faction, start_deck.cards);
-		
+
 		this.change_elem = document.getElementById("change-faction");
 		this.change_elem.addEventListener("click", () => this.selectFaction(), false);
-		
+
 		document.getElementById("download-deck").addEventListener("click", () => this.downloadDeck(), false);
 		document.getElementById("add-file").addEventListener("change", () => this.uploadDeck(), false);
 		document.getElementById("start-game").addEventListener("click", () => this.startNewGame(), false);
-		
+
 		this.update();
 	}
-	
+
 	// Called when client selects a deck faction. Clears previous cards and makes valid cards available.
 	setFaction(faction_name, silent){
 		if (!silent && this.faction === faction_name)
@@ -33,8 +33,8 @@ class DeckMaker {
 		this.elem.getElementsByTagName("h1")[0].innerHTML = factions[faction_name].name;
 		this.elem.getElementsByTagName("h1")[0].style.backgroundImage = iconURL("deck_shield_" + faction_name);
 		document.getElementById("faction-description").innerHTML = factions[faction_name].description;
-		
-		this.leaders = 
+
+		this.leaders =
 			card_dict.map((c,i) => ({index: i, card:c}) )
 			.filter(c => c.card.deck === faction_name && c.card.row === "leader");
 		if (!this.leader || this.faction !== faction_name) {
@@ -44,28 +44,28 @@ class DeckMaker {
 		this.faction = faction_name;
 		return true;
 	}
-	
+
 	// Called when client selects a leader for their deck
 	setLeader(index){
 		this.leader = this.leaders.filter( l => l.index == index)[0];
 		this.leader_elem.children[1].style.backgroundImage = largeURL(this.leader.card.deck + "_" + this.leader.card.filename);
 	}
-	
+
 	// Constructs a bank of cards that can be used by the faction's deck.
 	// If a deck is provided, will not add cards to bank that are already in the deck.
 	makeBank(faction, deck) {
 		this.clear();
 		let cards = card_dict.map((c,i) => ({card:c, index:i})).filter(
 		p => [faction, "neutral", "weather", "special"].includes(p.card.deck) && p.card.row !== "leader");
-		
+
 		cards.sort( function(id1, id2) {
 			let a = card_dict[id1.index], b = card_dict[id2.index];
 			let c1 = {name: a.name, basePower: -a.strength, faction: a.deck};
 			let c2 = {name: b.name, basePower: -b.strength, faction: b.deck};
 			return Card.compare(c1, c2);
 		});
-		
-		
+
+
 		let deckMap = {};
 		if (deck){
 			for (let i of Object.keys(deck)) deckMap[deck[i].index] = deck[i].count;
@@ -76,18 +76,18 @@ class DeckMaker {
 			this.makePreview(p.index, count, this.deck_elem, this.deck);
 		});
 	}
-	
+
 	// Creates HTML elements for the card previews
 	makePreview(index, num, container_elem, cards){
 		let card_data = card_dict[index];
-		
+
 		let elem = document.createElement("div");
 		elem.style.backgroundImage = largeURL(card_data.deck + "_" + card_data.filename);
 		elem.classList.add("card-lg");
 		let count = document.createElement("div");
 		elem.appendChild(count);
 		container_elem.appendChild(elem);
-		
+
 		let bankID = {index: index, count: num, elem: elem};
 		let isBank = cards === this.bank;
 		count.innerHTML = bankID.count;
@@ -97,7 +97,7 @@ class DeckMaker {
 
 		return bankID;
 	}
-	
+
 	// Updates the card preview elements when any changes are made to the deck
 	update(){
 		for (let x of this.bank) {
@@ -126,7 +126,7 @@ class DeckMaker {
 		this.stats = {total: total, units: units, special: special, strength: strength, hero: hero};
 		this.updateStats();
 	}
-	
+
 	// Updates and displays the statistics describing the cards currently in the deck
 	updateStats(){
 		let stats = document.getElementById("deck-stats");
@@ -135,11 +135,11 @@ class DeckMaker {
 		stats.children[5].innerHTML = this.stats.special + "/10";
 		stats.children[7].innerHTML = this.stats.strength;
 		stats.children[9].innerHTML = this.stats.hero;
-		
+
 		stats.children[3].style.color = this.stats.units < 22 ? "red" : "";
 		stats.children[5].style.color = (this.stats.special > 10) ? "red" : "";
 	}
-	
+
 	// Opens a Carousel to allow the client to select a leader for their deck
 	selectLeader(){
 		let container = new CardContainer();
@@ -148,7 +148,7 @@ class DeckMaker {
 			card.data = c;
 			return card;
 		});
-		
+
 		let index = this.leaders.indexOf(this.leader);
 		ui.queueCarousel(container, 1, (c,i) => {
 			let data = c.cards[i].data;
@@ -158,7 +158,7 @@ class DeckMaker {
 		Carousel.curr.index = index;
 		Carousel.curr.update();
 	}
-	
+
 	// Opens a Carousel to allow the client to select a faction for their deck
 	selectFaction() {
 		let container = new CardContainer();
@@ -176,7 +176,7 @@ class DeckMaker {
 		Carousel.curr.index = index;
 		Carousel.curr.update();
 	}
-	
+
 	// Called when client selects s a preview card. Moves it from bank to deck or vice-versa then updates;
 	select(index, isBank){
 		if (isBank) {
@@ -188,19 +188,19 @@ class DeckMaker {
 		}
 		this.update();
 	}
-	
+
 	// Adds a card to container (Bank or deck)
 	add(index, cards) {
 		let id = cards[index];
 		id.elem.children[0].innerHTML = ++id.count;
 	}
-	
+
 	// Removes a card from container (bank or deck)
 	remove(index, cards) {
 		let id = cards[index];
 		id.elem.children[0].innerHTML = --id.count;
 	}
-	
+
 	// Removes all elements in the bank and deck
 	clear(){
 		while (this.bank_elem.firstChild)
@@ -211,7 +211,7 @@ class DeckMaker {
 		this.deck = [];
 		this.stats = {};
 	}
-	
+
 	// Verifies current deck, creates the players and their decks, then starts a new game
 	startNewGame(){
 		let warning = "";
@@ -221,38 +221,38 @@ class DeckMaker {
 			warning += "Your deck must have no more than 10 special cards. \n";
 		if (warning != "")
 			return alert(warning);
-		
-		let me_deck = { 
+
+		let me_deck = {
 			faction: this.faction,
-			leader: card_dict[this.leader.index], 
+			leader: card_dict[this.leader.index],
 			cards: this.deck.filter(x => x.count > 0)
 		};
-		
+
 		let op_deck = JSON.parse( premade_deck[randomInt(Object.keys(premade_deck).length)] );
 		op_deck.cards = op_deck.cards.map(c => ({index:c[0], count:c[1]}) );
 		//op_deck.leader = card_dict[op_deck.leader];
-		
+
 		let leaders = card_dict.filter(c => c.row === "leader" && c.deck === op_deck.faction);
 		op_deck.leader = leaders[randomInt(leaders.length)];
 		//op_deck.leader = card_dict.filter(c => c.row === "leader")[12];
-		
+
 		player_me = new Player(0, "Player 1", me_deck );
 		player_op = new Player(1, "Player 2", op_deck);
-		
+
 		this.elem.classList.add("hide");
 		game.startGame();
 	}
-	
+
 	// Converts the current deck to a JSON string
 	deckToJSON(){
 		let obj = {
 			faction: this.faction,
-			leader: this.leader.index, 
+			leader: this.leader.index,
 			cards: this.deck.filter(x => x.count > 0).map(x => [x.index, x.count] )
 		};
 		return JSON.stringify(obj);
 	}
-	
+
 	// Called by the client to downlaod the current deck as a JSON file
 	downloadDeck(){
 		let json = this.deckToJSON();
@@ -262,7 +262,7 @@ class DeckMaker {
 		hidden_elem.download = "GwentDeck.json";
 		hidden_elem.click();
 	}
-	
+
 	// Called by the client to upload a JSON file representing a new deck
 	uploadDeck() {
 		let files = document.getElementById("add-file").files;
@@ -279,7 +279,7 @@ class DeckMaker {
 		fr.readAsText(files.item(0));
 		document.getElementById("add-file").value = "";
 	}
-	
+
 	// Creates a deck from a JSON file's contents and sets that as the current deck
 	// Notifies client with warnings if the deck is invalid
 	deckFromJSON(json) {
@@ -295,7 +295,7 @@ class DeckMaker {
 			warning += "'" + card_dict[deck.leader].name + "' is cannot be used as a leader\n";
 		if (deck.faction != card_dict[deck.leader].deck)
 			warning += "Leader '" + card_dict[deck.leader].name + "' doesn't match deck faction '" + deck.faction + "'.\n";
-		
+
 		let cards = deck.cards.filter( c => {
 			let card = card_dict[c[0]];
 			if (!card) {
@@ -313,7 +313,7 @@ class DeckMaker {
 			return true;
 		})
 		.map(c => ({index:c[0], count:Math.min(c[1], card_dict[c[0]].count)}) );
-		
+
 		if (warning && !confirm(warning + "\n\n\Continue importing deck?"))
 			return;
 		this.setFaction(deck.faction, true);
@@ -332,7 +332,7 @@ async function translateTo(card, container_source, container_dest){
 		return;
 	if (container_dest === player_op.hand && container_source === player_op.deck)
 		return;
-	
+
 	let elem = card.elem;
 	let source = !container_source ? card.elem : getSourceElem(card, container_source, container_dest);
 	let dest = getDestinationElem(card, container_source, container_dest);
@@ -352,12 +352,12 @@ async function translateTo(card, container_source, container_dest){
 	if (container_source instanceof Row && container_dest === player_me.hand)
 		y *= 7/8;
 	await translate(elem, x, y);
-	
+
 	// Returns true if the element is visible in the viewport
 	function isInDocument(elem){
 		return elem.getBoundingClientRect().width !== 0;
 	}
-	
+
 	// Returns the true offset of a nested element in the viewport
 	function trueOffset(elem, left){
 		let total =0
@@ -370,7 +370,7 @@ async function translateTo(card, container_source, container_dest){
 	}
 	function trueOffsetLeft(elem) {	return trueOffset(elem, true); }
 	function trueOffsetTop(elem) { return trueOffset(elem, false); }
-	
+
 	// Returns the source container's element to transition from
 	function getSourceElem(card, source, dest){
 		if (source instanceof HandAI)
@@ -423,7 +423,7 @@ async function fadeIn(elem, duration, delay){
 	await fade(true, elem, duration, delay);
 }
 
-// Fades an element over a duration 
+// Fades an element over a duration
 async function fade(fadeIn, elem, dur, delay){
 	if (delay)
 		await sleep(delay)
@@ -449,12 +449,12 @@ async function fade(fadeIn, elem, dur, delay){
 	}, dur/24);
 }
 
-//      Get Image paths   
+//      Get Image paths
 function iconURL(name, ext = "png"){
 	return imgURL("icons/" + name, ext);
 }
 function largeURL(name, ext="jpg"){
-	return imgURL("lg/" + name, ext) 
+	return imgURL("lg/" + name, ext)
 }
 function smallURL(name, ext="jpg"){
 	return imgURL("sm/" + name, ext);
@@ -464,7 +464,7 @@ function imgURL(path, ext) {
 }
 
 // Returns true if n is an Number
-function isNumber(n) { 
+function isNumber(n) {
 	return !isNaN(parseFloat(n)) && isFinite(n);
 }
 

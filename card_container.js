@@ -3,19 +3,19 @@ class CardContainer {
 		this.elem = elem;
 		this.cards = [];
 	}
-	
+
 	// Returns the first card that satisfies the predcicate. Does not modify container.
 	findCard(predicate){
 		for (let i=this.cards.length-1; i>=0; --i)
 			if (predicate(this.cards[i]))
 				return this.cards[i];
 	}
-	
+
 	// Returns a list of cards that satisfy the predicate. Does not modify container.
 	findCards(predicate){
 		return this.cards.filter(predicate);
 	}
-	
+
 	// Returns a list of up to n cards that satisfy the predicate. Does not modify container.
 	findCardsRandom(predicate, n){
 		let valid = predicate ? this.cards.filter(predicate) : this.cards;
@@ -30,31 +30,31 @@ class CardContainer {
 		}
 		return out;
 	}
-	
+
 	// Removes and returns a list of cards that satisy the predicate.
 	getCards(predicate){
 		return this.cards.reduce((a,c,i) => ( predicate(c,i)?[i]:[] ).concat(a), []).map( i => this.removeCard(i));
 	}
-	
+
 	// Removes and returns a card that satisfies the predicate.
 	getCard(predicate) {
 		for (let i=this.cards.length-1; i>=0; --i)
 			if (predicate(this.cards[i]))
 				return this.removeCard(i);
 	}
-	
+
 	// Removes and returns any cards up to n that satisfy the predicate.
 	getCardsRandom(predicate, n) {
 		return this.findCardsRandom(predicate, n).map( c => this.removeCard(c) );
 	}
-	
+
 	// Adds a card to the container along with its associated HTML element.
 	addCard(card, index){
 		this.cards.push(card);
 		this.addCardElement(card, index?index:0);
 		this.resize();
 	}
-	
+
 	// Removes a card from the container along with its associated HTML element.
 	removeCard(card, index){
 		if (this.cards.length === 0)
@@ -64,14 +64,14 @@ class CardContainer {
 		this.resize();
 		return card;
 	}
-	
+
 	// Adds a card to a pre-sorted CardContainer
 	addCardSorted(card){
 		let i = this.getSortedIndex(card);
 		this.cards.splice(i, 0, card);
 		return i;
 	}
-	
+
 	// Returns the expected index of a card in a sorted CardContainer
 	getSortedIndex(card){
 		for (var i=0; i<this.cards.length; ++i)
@@ -79,7 +79,7 @@ class CardContainer {
 				break;
 		return i;
 	}
-	
+
 	// Adds a card to a random index of the CardContainer
 	addCardRandom(card){
 		this.cards.push(card);
@@ -91,13 +91,13 @@ class CardContainer {
 		}
 		return index;
 	}
-	
+
 	// Removes the HTML elemenet associated with the card from this CardContainer
 	removeCardElement(card, index){
 		if (this.elem)
 			this.elem.removeChild(card.elem);
 	}
-	
+
 	// Adds the HTML elemenet associated with the card to this CardContainer
 	addCardElement(card, index){
 		if (this.elem){
@@ -107,10 +107,10 @@ class CardContainer {
 				this.elem.insertBefore(card.elem, this.elem.children[index]);
 		}
 	}
-	
+
 	// Empty function to be overried by subclasses that resize their content
 	resize(){}
-	
+
 	// Modifies the margin of card elements inside a row-like container to stack properly
 	resizeCardContainer(overlap_count, gap, coef) {
 		let n = this.elem.children.length;
@@ -118,24 +118,24 @@ class CardContainer {
 		let children = this.elem.getElementsByClassName("card");
 		for (let x of children)
 			x.style.marginLeft = x.style.marginRight = param;
-		
+
 		function defineCardRowMargin(n, coef = 0){
 			return "calc((100% - (4.45vw * " + n + ")) / (2*" +n+ ") - (" +coef+ "vw * " +n+ "))";
 		}
 	}
-	
+
 	// Allows the row to be clicked
 	setSelectable(){
 		this.elem.classList.add("row-selectable");
 	}
-	
+
 	// Disallows teh row to be clicked
 	clearSelectable() {
 		this.elem.classList.remove("row-selectable");
 		for (card in this.cards)
 			card.elem.classList.add("noclick");
 	}
-	
+
 	// Returns the container to its default, empty state
 	reset() {
 		while(this.cards.length)
@@ -145,7 +145,7 @@ class CardContainer {
 				this.elem.removeChild(this.elem.firstChild);
 		this.cards = [];
 	}
-	
+
 }
 
 // Contians all used cards in the order that they were discarded
@@ -154,19 +154,19 @@ class Grave extends CardContainer {
 		super(elem)
 		elem.addEventListener("click", () => ui.viewCardsInContainer(this), false);
 	}
-	
+
 	// Override
 	addCard(card){
 		this.setCardOffset(card, this.cards.length);
 		super.addCard(card, this.cards.length);
 	}
-	
+
 	// Override
 	removeCard(card){
 		let n = isNumber(card) ? card : this.cards.indexOf(card);
 		return super.removeCard(card, n);
 	}
-	
+
 	// Override
 	removeCardElement(card, index){
 		card.elem.style.left = "";
@@ -177,7 +177,7 @@ class Grave extends CardContainer {
 			this.setCardOffset(this.cards[i], i);
 		}
 	}
-	
+
 	// Offsets the card element in the deck
 	setCardOffset(card, n){
 		card.elem.style.left =  -0.03 * n +"vw";
@@ -195,13 +195,13 @@ class Deck extends CardContainer {
 		this.counter.appendChild( document.createTextNode(this.cards.length) );
 		this.elem.appendChild(this.counter);
 	}
-	
+
 	// Creates duplicates of cards with a count of more than one, then initializes deck
 	initializeFromID(card_id_list, player){
 		this.initialize( card_id_list.reduce((a,c) => a.concat(clone(c.count, card_dict[c.index])), []), player);
 		function clone(n ,elem) { for (var  i=0, a=[]; i<n; ++i) a.push(elem); return a; }
 	}
-	
+
 	// Populates a this deck with a list of card data and associated those cards with the owner of this deck.
 	initialize(card_data_list, player){
 		for (let i=0; i<card_data_list.length; ++i) {
@@ -212,14 +212,14 @@ class Deck extends CardContainer {
 		}
 		this.resize();
 	}
-	
+
 	// Override
 	addCard(card){
 		this.addCardRandom(card);
 		this.addCardElement();
 		this.resize();
 	}
-	
+
 	// Sends the top card to the passed hand
 	async draw(hand){
 		if (hand === player_op.hand)
@@ -227,13 +227,13 @@ class Deck extends CardContainer {
 		else
 			await board.toHand(this.cards[0], this);
 	}
-	
+
 	// Draws a card and sends it to the container before adding a card from the container back to the deck.
 	swap(container, card){
 		container.addCard(this.removeCard(0));
 		this.addCard(card);
 	}
-	
+
 	// Override
 	addCardElement() {
 		let elem = document.createElement("div");
@@ -242,23 +242,23 @@ class Deck extends CardContainer {
 		this.setCardOffset(elem, this.cards.length-1);
 		this.elem.insertBefore(elem, this.counter);
 	}
-	
+
 	// Override
 	removeCardElement(){
 		this.elem.removeChild(this.elem.children[this.cards.length]).style.left = "";
 	}
-	
+
 	// Offsets the card element in the deck
 	setCardOffset(elem, n){
 		elem.style.left =  -0.03 * n +"vw";
 	}
-	
+
 	// Override
 	resize(){
 		this.counter.innerHTML = this.cards.length;
 		this.setCardOffset(this.counter, this.cards.length);
 	}
-	
+
 	// Override
 	reset() {
 		super.reset();
@@ -270,7 +270,7 @@ class Deck extends CardContainer {
 class HandAI extends CardContainer {
 	constructor() {
 		super(undefined);
-		this.counter = document.getElementById("hand-count-op"); 
+		this.counter = document.getElementById("hand-count-op");
 		this.hidden_elem = document.getElementById("hand-op");
 	}
 	resize() {this.counter.innerHTML = this.cards.length; }
@@ -282,14 +282,14 @@ class Hand extends CardContainer {
 		super(elem);
 		this.counter = document.getElementById("hand-count-me");
 	}
-	
+
 	// Override
 	addCard(card){
 		let i = this.addCardSorted(card);
 		this.addCardElement(card, i);
 		this.resize();
 	}
-	
+
 	// Override
 	resize() {
 		this.counter.innerHTML = this.cards.length;
@@ -309,7 +309,7 @@ class Row extends CardContainer {
 		this.elem.addEventListener("click", () => ui.selectRow(this), true);
 		this.elem_special.addEventListener("click", () => ui.selectRow(this), false, true);
 	}
-	
+
 	// Override
 	async addCard(card) {
 		if (card.isSpecial()) {
@@ -321,13 +321,13 @@ class Row extends CardContainer {
 			this.resize();
 		}
 		this.updateState(card, true);
-		for (let x of card.placed) 
+		for (let x of card.placed)
 			await x(card, this);
 		card.elem.classList.add("noclick");
 		await sleep(600);
 		this.updateScore();
 	}
-	
+
 	// Override
 	removeCard(card) {
 		card = isNumber(card) ? card === -1 ? this.special : this.cards[card] : card;
@@ -344,7 +344,7 @@ class Row extends CardContainer {
 		this.updateScore();
 		return card;
 	}
-	
+
 	// Override
 	removeCardElement(card, index) {
 		super.removeCardElement(card, index);
@@ -352,7 +352,7 @@ class Row extends CardContainer {
 		x.style.marginLeft = x.style.marginRight = "";
 		x.classList.remove("noclick");
 	}
-	
+
 	// Updates a card's effect on the row
 	updateState(card, activate){
 		for (let x of card.abilities){
@@ -360,7 +360,7 @@ class Row extends CardContainer {
 				case "morale":
 				case "horn":
 				case "mardroeme": this.effects[x]+= activate ? 1 : -1; break;
-				case "bond": 
+				case "bond":
 					if (!this.effects.bond[card.id()])
 						this.effects.bond[card.id()] = 0;
 					this.effects.bond[card.id()] += activate ? 1 : -1;
@@ -368,26 +368,26 @@ class Row extends CardContainer {
 			}
 		}
 	}
-	
+
 	// Activates weather effect and visuals
 	addOverlay(overlay){
 		this.effects.weather = true;
 		this.elem_parent.getElementsByClassName("row-weather")[0].classList.add(overlay);
 		this.updateScore();
 	}
-	
+
 	// Deactivates weather effect and visuals
 	removeOverlay(overlay){
 		this.effects.weather = false;
 		this.elem_parent.getElementsByClassName("row-weather")[0].classList.remove(overlay);
 		this.updateScore();
 	}
-	
+
 	// Override
 	resize(){
 		this.resizeCardContainer(10, 0.075, .00325);
 	}
-	
+
 	// Updates the row's score by summing the current power of its cards
 	updateScore() {
 		let total = 0;
@@ -399,14 +399,14 @@ class Row extends CardContainer {
 		this.total = total;
 		this.elem_parent.getElementsByClassName("row-score")[0].innerHTML = this.total;
 	}
-	
+
 	// Calculates and set the card's current power
 	cardScore(card){
 		let total = this.calcCardScore(card);
 		card.setPower(total);
 		return total;
 	}
-	
+
 	// Calculates the current power of a card affected by row affects
 	calcCardScore(card) {
 		if (card.name === "decoy")
@@ -414,7 +414,7 @@ class Row extends CardContainer {
 		let total = card.basePower;
 		if (card.hero)
 			return total;
-		if (this.effects.weather) 
+		if (this.effects.weather)
 			total = Math.min(1, total);
 		if (game.doubleSpyPower && card.abilities.includes("spy"))
 			total *= 2;
@@ -426,7 +426,7 @@ class Row extends CardContainer {
 			total *= 2;
 		return total;
 	}
-	
+
 	// Applies a temporary leader horn affect that is removed at the end of the round
 	async leaderHorn(){
 		if (this.special !== null)
@@ -435,7 +435,7 @@ class Row extends CardContainer {
 		await this.addCard(horn);
 		game.roundEnd.push( () => this.removeCard(horn) );
 	}
-	
+
 	// Applies a local scorch effect to this row
 	async scorch() {
 		if (this.total >= 10)
@@ -444,7 +444,7 @@ class Row extends CardContainer {
 				await board.toGrave(c, this);
 			}));
 	}
-	
+
 	// Removes all cards and effects from this row
 	clear() {
 		if (this.special != null)
@@ -466,7 +466,7 @@ class Row extends CardContainer {
 		}
 		return max;
 	}
-	
+
 	// Override
 	reset(){
 		super.reset();
@@ -492,10 +492,10 @@ class Weather extends CardContainer {
 		let i=0;
 		for (let key of Object.keys(this.types))
 			this.types[key].rows = [board.row[i], board.row[5-i++]];
-		
+
 		this.elem.addEventListener("click",() => ui.selectRow(this), false);
 	}
-	
+
 	// Adds a card if unique and clears all weather if 'clear weather' card added
 	async addCard(card) {
 		super.addCard(card);
@@ -516,7 +516,7 @@ class Weather extends CardContainer {
 		}
 		await sleep(750);
 	}
-	
+
 	// Override
 	removeCard(card){
 		card = super.removeCard(card);
@@ -524,7 +524,7 @@ class Weather extends CardContainer {
 		this.changeWeather(card, x => --this.types[x].count === 0, (r,t) => r.removeOverlay(t.name));
 		return card;
 	}
-	
+
 	// Checks if a card's abilities are a weather type. If the predicate is met, perfom the action
 	// on the type's associated rows
 	changeWeather(card, predicate, action) {
@@ -535,17 +535,17 @@ class Weather extends CardContainer {
 			}
 		}
 	}
-	
+
 	// Removes all weather effects and cards
 	async clearWeather() {
 		await Promise.all(this.cards.map((c,i)=>this.cards[this.cards.length-i-1]).map(c => board.toGrave(c, this)));
 	}
-	
+
 	// Override
 	resize() {
 		this.resizeCardContainer(4, 0.075, .045);
 	}
-	
+
 	// Override
 	reset(){
 		super.reset();

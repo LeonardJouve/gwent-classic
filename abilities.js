@@ -56,7 +56,7 @@ var ability_dict = {
 	scorch: {
 		name: "Scorch",
 		description: "Discard after playing. Kills the strongest card(s) on the battlefield. ",
-		activated: async card => {	
+		activated: async card => {
 			await ability_dict["scorch"].placed(card);
 			await board.toGrave(card, card.holder.hand);
 		},
@@ -69,7 +69,7 @@ var ability_dict = {
 			let maxPower = maxUnits.reduce( (a,p) => Math.max(a, p[1][0].power), 0 );
 			let scorched = maxUnits.filter( p => p[1][0].power === maxPower);
 			let cards = scorched.reduce( (a,p) => a.concat( p[1].map(u => [p[0], u])), []);
-			
+
 			await Promise.all(cards.map( async u => await u[1].animate("scorch", true, false)) );
 			await Promise.all(cards.map( async u => await board.toGrave(u[1], u[0])) );
 		}
@@ -90,11 +90,11 @@ var ability_dict = {
 		placed: async (card) => await board.getRow(card, "siege", card.holder.opponent()).scorch()
 	},
 	agile: {
-		name:"agile", 
+		name:"agile",
 		description: "Can be placed in either the Close Combat or the Ranged Combat row. Cannot be moved once placed. "
 	},
 	muster: {
-		name:"muster", 
+		name:"muster",
 		description: "Find any cards with the same name in your deck and play them instantly. ",
 		placed: async (card) => {
 			let i = card.name.indexOf('-');
@@ -314,7 +314,7 @@ var ability_dict = {
 		weight: (card, ai, max) => ability_dict["eredin_king"].helper(card).weight,
 		helper: card => {
 			let weather = card.holder.deck.cards.filter(c => c.row === "weather").reduce((a,c) =>a.map(c => c.name).includes(c.name) ? a : a.concat([c]), [] );
-			
+
 			let out, weight = -1;
 			weather.forEach( c => {
 				let w = card.holder.controller.weightWeatherFromDeck(c, c.abilities[0]);
@@ -324,7 +324,7 @@ var ability_dict = {
 				}
 			});
 			return {card: out, weight: weight};
-		}			
+		}
 	},
 	eredin_treacherous: {
 		description: "Doubles the strength of all spy cards (affects both players).",
@@ -364,7 +364,7 @@ var ability_dict = {
 			let ranged =  board.getRow(card, "ranged");
 			let cards = ability_dict["francesca_hope"].helper(card);
 			await Promise.all(cards.map(async p => await board.moveTo(p.card, p.row === close ? ranged : close, p.row) ) );
-			
+
 		},
 		weight: card => {
 			let cards = ability_dict["francesca_hope"].helper(card);

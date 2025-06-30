@@ -28,7 +28,7 @@ var factions = {
 			game.roundStart.push( async () => {
 				await ui.notification("monsters", 1200);
 				delete card.noRemove;
-				return true; 
+				return true;
 			});
 			return false;
 		}),

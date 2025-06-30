@@ -8,17 +8,17 @@ class Board {
 			this.row[x] = new Row(elem);
 		}
 	}
-	
+
 	// Get the opponent of this Player
 	opponent(player){
 		return player === player_me ? player_op : player_me;
 	}
-	
+
 	// Sends and translates a card from the source to the Deck of the card's holder
 	async toDeck(card, source){
 		await this.moveTo(card, "deck", source);
 	}
-	
+
 	// Sends and translates a card from the source to the Grave of the card's holder
 	async toGrave(card, source){
 		await this.moveTo(card, "grave", source);
@@ -33,13 +33,13 @@ class Board {
 	async toWeather(card, source) {
 		await this.moveTo(card, weather, source);
 	}
-	
+
 	// Sends and translates a card from the source to the Deck of the card's combat row
 	async toRow(card, source) {
 		let row = (card.row === "agile") ? "close" : card.row ? card.row : "close";
 		await this.moveTo(card, row, source);
 	}
-	
+
 	// Sends and translates a card from the source to a specified row name or CardContainer
 	async moveTo(card, dest, source) {
 		if (isString(dest))
@@ -47,14 +47,14 @@ class Board {
 		await translateTo(card, source ? source : null, dest);
 		await dest.addCard(source ? source.removeCard(card) : card);
 	}
-	
+
 	// Sends and translates a card from the source to a row name associated with the passed player
 	async addCardToRow(card, row_name, player, source) {
 		let row = this.getRow(card, row_name, player);
 		await translateTo(card, source, row);
 		await row.addCard(card);
 	}
-	
+
 	// Returns the CardCard associated with the row name that the card would be sent to
 	getRow(card, row_name, player){
 		player = player ? player : card ? card.holder : player_me;
@@ -71,7 +71,7 @@ class Board {
 			default: console.error( card.name + " sent to incorrect row \"" +row_name+ "\" by " +card.holder.name );
 		}
 	}
-	
+
 	// Updates which player currently is in the lead
 	updateLeader() {
 		let dif = player_me.total - player_op.total;
