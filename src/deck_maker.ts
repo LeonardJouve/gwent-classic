@@ -1,14 +1,14 @@
-import Player, { DeckData } from "./player";
-import premade_deck, { PremadeDeck } from "./decks";
+import Player, {type DeckData} from "./player";
+import premade_deck, {type PremadeDeck} from "./decks";
 import factions from "./factions";
 import {iconURL, largeURL, randomInt} from "./utils";
-import card_dict, { CardData } from "./cards";
+import card_dict, {type CardData} from "./cards";
 import Card from "./card";
 import Carousel from "./carousel";
 import CardContainer from "./card_container";
 import UI from "./ui";
 import Game from "./game";
-import { CardId } from "./deck";
+import {type CardId} from "./deck";
 
 type Leader = {
     index: number;

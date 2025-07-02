@@ -1,8 +1,8 @@
-import ability_dict, { Ability } from "./abilities";
+import ability_dict, {type Ability} from "./abilities";
 import Board from "./board";
 import DeckMaker from "./deck_maker";
 import factions from "./factions";
-import Player from "./player";
+import type Player from "./player";
 import UI from "./ui";
 import {fadeIn} from "./utils";
 import Weather from "./weather";

@@ -1,10 +1,10 @@
-import Player from "./player";
+import type Player from "./player";
 import Row from "./row";
 import {isString, translateTo} from "./utils";
 import Weather from "./weather";
 import DeckMaker from "./deck_maker";
-import CardContainer from "./card_container";
-import Card from "./card";
+import type CardContainer from "./card_container";
+import type Card from "./card";
 
 export default class Board {
 	private op_score: number;

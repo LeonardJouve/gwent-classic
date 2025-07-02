@@ -3,9 +3,9 @@ import Board from "./board";
 import Card from "./card";
 import CardContainer from "./card_container";
 import Game from "./game";
-import Grave from "./grave";
-import Player from "./player";
-import Row from "./row";
+import type Grave from "./grave";
+import type Player from "./player";
+import type Row from "./row";
 import {randomInt} from "./utils";
 import Weather from "./weather";
 

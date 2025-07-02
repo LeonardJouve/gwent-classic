@@ -1,12 +1,12 @@
 import Board from "./board";
 import Card from "./card";
 import CardContainer from "./card_container";
-import card_dict, { CardData } from "./cards";
+import card_dict, {type CardData} from "./cards";
 import {iconURL} from "./utils";
 import DeckMaker from "./deck_maker";
-import Player from "./player";
-import Hand from "./hand";
-import HandAI from "./hand_ai";
+import type Player from "./player";
+import type Hand from "./hand";
+import type HandAI from "./hand_ai";
 
 export type CardId = {
     count: number;

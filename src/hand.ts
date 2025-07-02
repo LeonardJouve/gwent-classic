@@ -1,4 +1,4 @@
-import Card from "./card";
+import type Card from "./card";
 import CardContainer from "./card_container";
 
 // Hand used by current player

@@ -1,7 +1,7 @@
 import Card from "./card";
-import CardContainer from "./card_container";
+import type CardContainer from "./card_container";
 import UI from "./ui";
-import { largeURL } from "./utils";
+import {largeURL} from "./utils";
 
 export default class Carousel {
 	private container: CardContainer;

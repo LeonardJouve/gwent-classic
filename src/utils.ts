@@ -1,4 +1,3 @@
-import UI from "./ui";
 import DeckMaker from "./deck_maker";
 import Row from "./row";
 import ControllerAI from "./controller_ai";
@@ -111,11 +110,6 @@ export function sleepUntil(predicate: () => boolean, ms?: number): Promise<void>
 			}
 		}, ms)
 	});
-}
-
-// Initializes the interractive YouTube object
-export function onYouTubeIframeAPIReady() {
-	UI.curr.initYouTube();
 }
 
 // Translates a card between two containers

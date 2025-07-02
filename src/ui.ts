@@ -1,6 +1,6 @@
 import ability_dict from "./abilities";
 import Board from "./board";
-import Card from "./card";
+import type Card from "./card";
 import CardContainer from "./card_container";
 import Carousel from "./carousel";
 import ControllerAI from "./controller_ai";

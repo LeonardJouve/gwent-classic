@@ -2,14 +2,14 @@ import Card from "./card";
 import CardContainer from "./card_container";
 import card_dict from "./cards";
 import Carousel from "./carousel";
-import ControllerAI, { CardTypes, Maximum } from "./controller_ai";
+import ControllerAI, {type CardTypes, type Maximum} from "./controller_ai";
 import Board from "./board";
 import Game from "./game";
 import UI from "./ui";
 import Weather from "./weather";
 import DeckMaker from "./deck_maker";
 import Row from "./row";
-import Grave from "./grave";
+import type Grave from "./grave";
 
 export type Ability = {
     name?: string;

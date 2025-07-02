@@ -6,8 +6,8 @@ import UI from "./ui";
 import DeckMaker from "./deck_maker";
 import { randomInt } from "./utils";
 import HandAI from "./hand_ai";
-import Card from "./card";
-import Player from "./player";
+import type Card from "./card";
+import type Player from "./player";
 
 type Faction = {
     name: string;

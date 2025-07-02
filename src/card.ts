@@ -1,6 +1,6 @@
 import ability_dict from "./abilities";
 import Board from "./board";
-import CardContainer from "./card_container";
+import type CardContainer from "./card_container";
 import {type CardData} from "./cards";
 import Player from "./player";
 import Row from "./row";

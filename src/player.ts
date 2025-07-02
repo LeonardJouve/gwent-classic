@@ -12,8 +12,8 @@ import Board from "./board";
 import DeckMaker from "./deck_maker";
 import UI from "./ui";
 import Game from "./game";
-import Row from "./row";
-import { CardData } from "./cards";
+import type Row from "./row";
+import {type CardData} from "./cards";
 
 export type DeckData = {
     faction: string;
