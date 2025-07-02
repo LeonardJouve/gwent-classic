@@ -1,6 +1,28 @@
-"use strict"
+import Card from "./card";
+import CardContainer from "./card_container";
+import card_dict from "./cards";
+import Carousel from "./carousel";
+import ControllerAI, { CardTypes, Maximum } from "./controller_ai";
+import Board from "./board";
+import Game from "./game";
+import UI from "./ui";
+import Weather from "./weather";
+import DeckMaker from "./deck_maker";
+import Row from "./row";
+import Grave from "./grave";
 
-var ability_dict = {
+export type Ability = {
+    name?: string;
+    description?: string;
+    placed?: (card: Card, row?: Row) => Promise<void>;
+    activated?: (card: Card) => Promise<void>;
+    removed?: (card: Card) => Promise<void>;
+    weight?: (card: Card, ai: ControllerAI, max: Maximum, data: CardTypes) => number;
+    helper?: (card: Card) => any;
+    gameStart?: () => void;
+}
+
+const ability_dict: Record<string, Ability> = {
 	clear: {
 		name: "Clear Weather",
 		description: "Removes all Weather Cards (Biting Frost, Impenetrable Fog and Torrential Rain) effects. "
@@ -38,15 +60,17 @@ var ability_dict = {
 		name: "Mardroeme",
 		description: "Triggers transformation of all Berserker cards on the same row. ",
 		placed: async (card, row) => {
+            if (!row) return;
 			let berserkers = row.findCards(c => c.abilities.includes("berserker"));
-			await Promise.all(berserkers.map(async c => await ability_dict["berserker"].placed(c, row)));
+			await Promise.all(berserkers.map(async c => await ability_dict["berserker"].placed?.(c, row)));
 		}
 	},
 	berserker: {
 		name: "Berserker",
 		description: "Transforms into a bear when a Mardroeme card is on its row. ",
 		placed: async (card, row) => {
-			if (row.effects.mardroeme === 0)
+			if (!row) return;
+            if (row.effects.mardroeme === 0)
 				return;
 			row.removeCard(card);
 			let cardId = card.name.indexOf("Young") === -1 ? 206 : 207;
@@ -57,37 +81,40 @@ var ability_dict = {
 		name: "Scorch",
 		description: "Discard after playing. Kills the strongest card(s) on the battlefield. ",
 		activated: async card => {
-			await ability_dict["scorch"].placed(card);
-			await board.toGrave(card, card.holder.hand);
+			await ability_dict["scorch"].placed?.(card, undefined);
+			await Board.curr.toGrave(card, card.holder.hand);
 		},
 		placed: async (card, row) => {
 			if (row !== undefined)
 				row.cards.splice( row.cards.indexOf(card), 1);
-			let maxUnits = board.row.map( r => [r,r.maxUnits()] ).filter( p => p[1].length > 0);
+			let maxUnits = Board.curr.row.map<[Row, Card[]]>( r => [r,r.maxUnits()] ).filter( p => p[1].length > 0);
 			if (row !== undefined)
 				row.cards.push(card);
 			let maxPower = maxUnits.reduce( (a,p) => Math.max(a, p[1][0].power), 0 );
 			let scorched = maxUnits.filter( p => p[1][0].power === maxPower);
-			let cards = scorched.reduce( (a,p) => a.concat( p[1].map(u => [p[0], u])), []);
+			let cards = scorched.reduce<[Row, Card][]>( (a,p) => a.concat( p[1].map(u => [p[0], u])), []);
 
 			await Promise.all(cards.map( async u => await u[1].animate("scorch", true, false)) );
-			await Promise.all(cards.map( async u => await board.toGrave(u[1], u[0])) );
+			await Promise.all(cards.map( async u => await Board.curr.toGrave(u[1], u[0])) );
 		}
 	},
 	scorch_c: {
 		name: "Scorch - Close Combat",
 		description: "Destroy your enemy's strongest Close Combat unit(s) if the combined strength of all his or her Close Combat units is 10 or more. ",
-		placed: async (card) => await board.getRow(card, "close", card.holder.opponent()).scorch()
+		placed: async (card) => {
+            const row =Board.curr.getRow(card, "close", card.holder.opponent())
+            if (row instanceof Row) row.scorch();
+        },
 	},
 	scorch_r: {
 		name: "Scorch - Ranged",
 		description: "Destroy your enemy's strongest Ranged Combat unit(s) if the combined strength of all his or her Ranged Combat units is 10 or more. ",
-		placed: async (card) => await board.getRow(card, "ranged", card.holder.opponent()).scorch()
+		placed: async (card) => await (Board.curr.getRow(card, "ranged", card.holder.opponent()) as Row).scorch()
 	},
 	scorch_s: {
 		name: "Scorch - Siege",
 		description: "Destroys your enemy's strongest Siege Combat unit(s) if the combined strength of all his or her Siege Combat units is 10 or more. ",
-		placed: async (card) => await board.getRow(card, "siege", card.holder.opponent()).scorch()
+		placed: async (card) => await (Board.curr.getRow(card, "siege", card.holder.opponent()) as Row).scorch()
 	},
 	agile: {
 		name:"agile",
@@ -99,13 +126,14 @@ var ability_dict = {
 		placed: async (card) => {
 			let i = card.name.indexOf('-');
 			let cardName = i === -1 ?  card.name : card.name.substring(0, i);
-			let pred = c => c.name.startsWith(cardName);
-			let units = card.holder.hand.getCards(pred).map(x => [card.holder.hand, x])
-			.concat(card.holder.deck.getCards(pred).map( x => [card.holder.deck, x] ) );
+			let pred: (card: Card) => boolean = c => c.name.startsWith(cardName);
+			let units = card.holder.hand.getCards(pred)
+                .map<[CardContainer, Card]>(x => [card.holder.hand, x])
+			    .concat(card.holder.deck.getCards(pred).map( x => [card.holder.deck, x] ) );
 			if (units.length === 0)
 				return;
 			await card.animate("muster");
-			await Promise.all( units.map( async p =>  await board.addCardToRow(p[1], p[1].row, p[1].holder, p[0])));
+			await Promise.all( units.map( async p =>  await Board.curr.addCardToRow(p[1], p[1].row, p[1].holder, p[0])));
 		}
 	},
 	spy: {
@@ -124,22 +152,26 @@ var ability_dict = {
 		name: "medic",
 		description: "Choose one card from your discard pile and play it instantly (no Heroes or Special Cards). ",
 		placed: async (card) => {
-			let grave = board.getRow(card, "grave", card.holder);
+			let grave = Board.curr.getRow(card, "grave", card.holder) as Grave;
 			let units = card.holder.grave.findCards(c => c.isUnit());
 			if (units.length <= 0)
 				return;
-			let wrapper = {card : null};
-			if (game.randomRespawn) {
+			let wrapper: {card: Card|null} = {card : null};
+			if (Game.curr.randomRespawn) {
 				 wrapper.card = grave.findCardsRandom(c => c.isUnit())[0];
 			} else if (card.holder.controller instanceof ControllerAI)
 				wrapper.card =  card.holder.controller.medic(card, grave);
 			else
-				await ui.queueCarousel(card.holder.grave, 1, (c, i) => wrapper.card=c.cards[i], c => c.isUnit(), true);
+				await UI.curr.queueCarousel(card.holder.grave, 1, async (c, i) => {
+                    wrapper.card=c.cards[i];
+                }, c => c.isUnit(), true);
 			let res = wrapper.card;
-			grave.removeCard(res);
-			grave.addCard(res);
-			await res.animate("medic");
-			await res.autoplay(grave);
+            if (res) {
+                grave.removeCard(res);
+                grave.addCard(res);
+                await res.animate("medic");
+                await res.autoplay(grave);
+            }
 		}
 	},
 	morale: {
@@ -151,7 +183,7 @@ var ability_dict = {
 		name: "Tight Bond",
 		description: "Place next to a card with the same name to double the strength of both cards. ",
 		placed: async card => {
-			let bonds = board.getRow(card, card.row, card.holder).findCards(c => c.name === card.name);
+			let bonds = Board.curr.getRow(card, card.row, card.holder).findCards(c => c.name === card.name);
 			if (bonds.length > 1)
 				await Promise.all( bonds.map(c => c.animate("bond")) );
 		}
@@ -162,7 +194,7 @@ var ability_dict = {
 		removed: async (card) => {
 			let bdf = new Card(card_dict[21], card.holder);
 			bdf.removed.push( () => setTimeout( () => bdf.holder.grave.removeCard(bdf), 1001) );
-			await board.addCardToRow(bdf, "close", card.holder);
+			await Board.curr.addCardToRow(bdf, "close", card.holder);
 		},
 		weight: () => 50
 	},
@@ -172,7 +204,7 @@ var ability_dict = {
 		removed: async card => {
 			let bdf = new Card(card_dict[196], card.holder);
 			bdf.removed.push( () => setTimeout( () => bdf.holder.grave.removeCard(bdf), 1001) );
-			await board.addCardToRow(bdf, "close", card.holder);
+			await Board.curr.addCardToRow(bdf, "close", card.holder);
 		},
 		weight: () => 50
 	},
@@ -187,22 +219,22 @@ var ability_dict = {
 	},
 	foltest_lord: {
 		description: "Clear any weather effects (resulting from Biting Frost, Torrential Rain or Impenetrable Fog cards) in play.",
-		activated: async () => await weather.clearWeather(),
-		weight: (card, ai) =>  ai.weightCard( {row:"weather", name:"Clear Weather"} )
+		activated: async () => await Weather.curr.clearWeather(),
+		weight: (card, ai) =>  ai.weightCard( {row:"weather", name:"Clear Weather"} as Card, undefined )
 	},
 	foltest_siegemaster: {
 		description: "Doubles the strength of all your Siege units (unless a Commander's Horn is also present on that row).",
-		activated: async card => await board.getRow(card, "siege", card.holder).leaderHorn(),
-		weight: (card, ai) => ai.weightHornRow(card, board.getRow(card, "siege", card.holder))
+		activated: async card => await (Board.curr.getRow(card, "siege", card.holder) as Row).leaderHorn(),
+		weight: (card, ai) => ai.weightHornRow(card, Board.curr.getRow(card, "siege", card.holder) as Row)
 	},
 	foltest_steelforged: {
 		description: "Destroy your enemy's strongest Siege unit(s) if the combined strength of all his or her Siege units is 10 or more.",
-		activated: async card => await ability_dict["scorch_s"].placed(card),
+		activated: async card => await ability_dict["scorch_s"].placed?.(card),
 		weight: (card, ai, max) => ai.weightScorchRow(card, max, "siege")
 	},
 	foltest_son: {
 		description: "Destroy your enemy's strongest Ranged Combat unit(s) if the combined strength of all his or her Ranged Combat units is 10 or more.",
-		activated: async card => await ability_dict["scorch_r"].placed(card),
+		activated: async card => await ability_dict["scorch_r"].placed?.(card),
 		weight: (card, ai, max) => ai.weightScorchRow(card, max, "ranged")
 	},
 	emhyr_imperial: {
@@ -221,8 +253,8 @@ var ability_dict = {
 				return;
 			let container = new CardContainer();
 			container.cards = card.holder.opponent().hand.findCardsRandom(() => true, 3);
-			Carousel.curr.cancel();
-			await ui.viewCardsInContainer(container);
+			Carousel.curr?.cancel();
+			await UI.curr.viewCardsInContainer(container, undefined);
 		},
 		weight: card => {
 			let count = card.holder.opponent().hand.cards.length;
@@ -235,32 +267,32 @@ var ability_dict = {
 	emhyr_relentless: {
 		description: "Draw a card from your opponent's discard pile.",
 		activated: async card => {
-			let grave = board.getRow(card, "grave", card.holder.opponent());
+			let grave = Board.curr.getRow(card, "grave", card.holder.opponent()) as Grave;
 			if (grave.findCards(c => c.isUnit()).length === 0)
 				return;
 			if (card.holder.controller instanceof ControllerAI) {
 				let newCard = card.holder.controller.medic(card, grave);
 				newCard.holder = card.holder;
-				await board.toHand(newCard, grave);
+				await Board.curr.toHand(newCard, grave);
 				return;
 			}
-			Carousel.curr.cancel();
-			await ui.queueCarousel(grave, 1, (c,i) => {
+			Carousel.curr?.cancel();
+			await UI.curr.queueCarousel(grave, 1, async (c,i) => {
 				let newCard = c.cards[i];
 				newCard.holder = card.holder;
-				board.toHand(newCard, grave);
-			}, c => c.isUnit(), true);
+				Board.curr.toHand(newCard, grave);
+			}, c => c.isUnit(), true, undefined, undefined);
 		},
 		weight: (card, ai, max, data) => ai.weightMedic(data, 0, card.holder.opponent())
 	},
 	emhyr_invader: {
 		description: "Abilities that restore a unit to the battlefield restore a randomly-chosen unit. Affects both players.",
-		gameStart: () => game.randomRespawn = true
+		gameStart: () => Game.curr.randomRespawn = true
 	},
 	eredin_commander: {
 		description: "Double the strength of all your Close Combat units (unless a Commander's horn is 	also present on that row).",
-		activated: async card => await board.getRow(card, "close", card.holder).leaderHorn(),
-		weight: (card, ai) => ai.weightHornRow(card, board.getRow(card, "close", card.holder))
+		activated: async card => await (Board.curr.getRow(card, "close", card.holder) as Row).leaderHorn(),
+		weight: (card, ai) => ai.weightHornRow(card, Board.curr.getRow(card, "close", card.holder) as Row)
 	},
 	eredin_bringer_of_death: {
 		name: "Eredin : Bringer of Death",
@@ -270,28 +302,30 @@ var ability_dict = {
 			if (card.holder.controller instanceof ControllerAI) {
 				newCard = card.holder.controller.medic(card, card.holder.grave)
 			} else {
-				Carousel.curr.exit();
-				await ui.queueCarousel(card.holder.grave, 1, (c,i) => newCard = c.cards[i], c => c.isUnit(), false, false);
+				Carousel.curr?.exit();
+				await UI.curr.queueCarousel(card.holder.grave, 1, async (c,i) => {
+                    newCard = c.cards[i]
+                }, c => c.isUnit(), false, false, undefined);
 			}
 			if (newCard)
-				await board.toHand(newCard, card.holder.grave);
+				await Board.curr.toHand(newCard, card.holder.grave);
 		},
 		weight: (card, ai, max, data) => ai.weightMedic(data, 0, card.holder)
 	},
 	eredin_destroyer: {
 		description: "Discard 2 card and draw 1 card of your choice from your deck.",
 		activated: async (card) => {
-			let hand = board.getRow(card, "hand", card.holder);
-			let deck = board.getRow(card, "deck", card.holder);
+			let hand = Board.curr.getRow(card, "hand", card.holder);
+			let deck = Board.curr.getRow(card, "deck", card.holder);
 			if (card.holder.controller instanceof ControllerAI) {
 				let cards = card.holder.controller.discardOrder(card).splice(0,2).filter(c => c.basePower < 7);
-				await Promise.all(cards.map(async c => await board.toGrave(c, card.holder.hand)));
+				await Promise.all(cards.map(async c => await Board.curr.toGrave(c, card.holder.hand)));
 				card.holder.deck.draw(card.holder.hand);
 				return;
 			} else
-				Carousel.curr.exit();
-			await ui.queueCarousel(hand, 2, (c,i) => board.toGrave(c.cards[i], c), () => true);
-			await ui.queueCarousel(deck, 1, (c,i) => board.toHand(c.cards[i], deck), () => true, true);
+				Carousel.curr?.exit();
+			await UI.curr.queueCarousel(hand, 2, (c,i) => Board.curr.toGrave(c.cards[i], c), () => true);
+			await UI.curr.queueCarousel(deck, 1, (c,i) => Board.curr.toHand(c.cards[i], deck), () => true, true);
 		},
 		weight: (card, ai) => {
 			let cards = ai.discardOrder(card).splice(0,2).filter(c => c.basePower < 7);
@@ -303,17 +337,17 @@ var ability_dict = {
 	eredin_king: {
 		description: "Pick any weather card from your deck and play it instantly.",
 		activated: async card => {
-			let deck = board.getRow(card, "deck", card.holder);
+			let deck = Board.curr.getRow(card, "deck", card.holder);
 			if (card.holder.controller instanceof ControllerAI) {
-				await ability_dict["eredin_king"].helper(card).card.autoplay(card.holder.deck);
+				await ability_dict["eredin_king"].helper?.(card).card.autoplay(card.holder.deck);
 			} else {
-				Carousel.curr.cancel();
-				await ui.queueCarousel(deck, 1, (c,i) => board.toWeather(c.cards[i], deck), c => c.faction === "weather", true);
+				Carousel.curr?.cancel();
+				await UI.curr.queueCarousel(deck, 1, (c,i) => Board.curr.toWeather(c.cards[i], deck), c => c.faction === "weather", true, undefined, undefined);
 			}
 		},
-		weight: (card, ai, max) => ability_dict["eredin_king"].helper(card).weight,
+		weight: (card, ai, max) => ability_dict["eredin_king"].helper?.(card).weight,
 		helper: card => {
-			let weather = card.holder.deck.cards.filter(c => c.row === "weather").reduce((a,c) =>a.map(c => c.name).includes(c.name) ? a : a.concat([c]), [] );
+			let weather = card.holder.deck.cards.filter(c => c.row === "weather").reduce<Card[]>((a,c) =>a.map(c => c.name).includes(c.name) ? a : a.concat([c]), [] );
 
 			let out, weight = -1;
 			weather.forEach( c => {
@@ -328,25 +362,27 @@ var ability_dict = {
 	},
 	eredin_treacherous: {
 		description: "Doubles the strength of all spy cards (affects both players).",
-		gameStart: () => game.doubleSpyPower = true
+		gameStart: () => Game.curr.doubleSpyPower = true
 	},
 	francesca_queen: {
 		description: "Destroy your enemy's strongest Close Combat unit(s) if the combined strength of all his or her Close Combat units is 10 or more.",
-		activated: async card => await ability_dict["scorch_c"].placed(card),
+		activated: async card => await ability_dict["scorch_c"].placed?.(card),
 		weight: (card, ai, max) => ai.weightScorchRow(card, max, "close")
 	},
 	francesca_beautiful: {
 		description: "Doubles the strength of all your Ranged Combat units (unless a Commander's Horn is also present on that row).",
-		activated: async card => await board.getRow(card, "ranged", card.holder).leaderHorn(),
-		weight: (card, ai) => ai.weightHornRow(card, board.getRow(card, "ranged", card.holder))
+		activated: async card => await (Board.curr.getRow(card, "ranged", card.holder) as Row).leaderHorn(),
+		weight: (card, ai) => ai.weightHornRow(card, Board.curr.getRow(card, "ranged", card.holder) as Row)
 	},
 	francesca_daisy: {
 		description: "Draw an extra card at the beginning of the battle.",
-		placed: card => game.gameStart.push( () => {
-			let draw = card.holder.deck.removeCard(0);
-			card.holder.hand.addCard( draw );
-			return true;
-		})
+		placed: async card => {
+                Game.curr.gameStart.push( async () => {
+                let draw = card.holder.deck.removeCard(0);
+                card.holder.hand.addCard( draw );
+                return true;
+            })
+        },
 	},
 	francesca_pureblood: {
 		description: "Pick a Biting Frost card from your deck and play it instantly.",
@@ -360,36 +396,36 @@ var ability_dict = {
 	francesca_hope: {
 		description: "Move agile units to whichever valid row maximizes their strength (don't move units already in optimal row).",
 		activated: async card => {
-			let close = board.getRow(card, "close");
-			let ranged =  board.getRow(card, "ranged");
-			let cards = ability_dict["francesca_hope"].helper(card);
-			await Promise.all(cards.map(async p => await board.moveTo(p.card, p.row === close ? ranged : close, p.row) ) );
+			let close = Board.curr.getRow(card, "close", undefined);
+			let ranged =  Board.curr.getRow(card, "ranged", undefined);
+			let cards: {row: CardContainer, card: Card, weight: number;}[] = ability_dict["francesca_hope"].helper!(card);
+			await Promise.all(cards.map(async p => await Board.curr.moveTo(p.card, p.row === close ? ranged : close, p.row) ) );
 
 		},
 		weight: card => {
-			let cards = ability_dict["francesca_hope"].helper(card);
+			let cards: {row: CardContainer, card: Card, weight: number;}[] = ability_dict["francesca_hope"].helper!(card);
 			return cards.reduce((a,c) => a + c.weight, 0);
 		},
-		helper: card => {
-			let close = board.getRow(card, "close");
-			let ranged =  board.getRow(card, "ranged");
+		helper: (card): {row: CardContainer, card: Card, weight: number;}[] => {
+			let close = Board.curr.getRow(card, "close", undefined);
+			let ranged =  Board.curr.getRow(card, "ranged", undefined);
 			return validCards(close).concat( validCards(ranged) );
-			function validCards(cont) {
+			function validCards(cont: CardContainer) {
 				return cont.findCards(c => c.row === "agile").filter(c => dif(c,cont) > 0).map(c => ({card:c, row:cont, weight:dif(c,cont)}))
 			}
-			function dif(card, source) {
-				return (source === close ? ranged : close).calcCardScore(card) - card.power;
+			function dif(card: Card, source: CardContainer) {
+				return ((source === close ? ranged : close) as Row).calcCardScore(card) - card.power;
 			}
 		}
 	},
 	crach_an_craite: {
 		description: "Shuffle all cards from each player's graveyard back into their decks.",
 		activated: async card => {
-			Promise.all(card.holder.grave.cards.map(c => board.toDeck(c, card.holder.grave)));
-			await Promise.all(card.holder.opponent().grave.cards.map(c => board.toDeck(c, card.holder.opponent().grave)));
+			Promise.all(card.holder.grave.cards.map(c => Board.curr.toDeck(c, card.holder.grave)));
+			await Promise.all(card.holder.opponent().grave.cards.map(c => Board.curr.toDeck(c, card.holder.opponent().grave)));
 		},
 		weight: (card, ai, max, data) => {
-			if( game.roundCount < 2)
+			if( Game.curr.roundCount < 2)
 				return 0;
 			let medics = card.holder.hand.findCard(c => c.abilities.includes("medic"));
 			if (medics !== undefined)
@@ -404,6 +440,8 @@ var ability_dict = {
 	},
 	king_bran: {
 		description: "Units only lose half their Strength in bad weather conditions.",
-		placed: card => board.row.filter((c,i) => card.holder === player_me ^ i<3).forEach(r => r.halfWeather = true)
+		placed: async card => Board.curr.row.filter((c,i) => Number(card.holder === DeckMaker.curr.player_me) ^ Number(i<3)).forEach(r => r.halfWeather = true)
 	}
 };
+
+export default ability_dict;

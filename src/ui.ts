@@ -1,0 +1,359 @@
+import ability_dict from "./abilities";
+import Board from "./board";
+import Card from "./card";
+import CardContainer from "./card_container";
+import Carousel from "./carousel";
+import ControllerAI from "./controller_ai";
+import DeckMaker from "./deck_maker";
+import Game from "./game";
+import Popup from "./popup";
+import {fadeIn, fadeOut, iconURL, largeURL, randomInt, sleep, sleepUntil} from "./utils";
+import Weather from "./weather";
+
+export default class UI {
+    public toggleMusic_elem: HTMLElement;
+    private ytActive: boolean;
+    private mute: boolean;
+    private notif_elem: HTMLElement;
+    private preview: HTMLElement;
+    private carousels: Carousel[];
+    private previewCard: Card|null;
+    private lastRow: CardContainer|null;
+    private youtube?: YT.Player;
+    static curr: UI;
+
+	constructor() {
+        this.mute = false;
+
+        this.carousels = [];
+		this.notif_elem = document.getElementById("notification-bar") as HTMLElement;
+		this.preview = document.getElementsByClassName("card-preview")[0] as HTMLElement;
+		this.previewCard = null;
+		this.lastRow = null;
+		const passButton = document.getElementById("pass-button") as HTMLElement;
+        passButton.addEventListener("click", () => DeckMaker.curr.player_me.passRound(), false);
+		const cancelElement = document.getElementById("click-background") as HTMLElement;
+        cancelElement.addEventListener("click", () => UI.curr.cancel(), false);
+		this.youtube;
+		this.ytActive = false;
+		this.toggleMusic_elem = document.getElementById("toggle-music") as HTMLElement;
+		this.toggleMusic_elem.classList.add("fade");
+		this.toggleMusic_elem.addEventListener("click", () => this.toggleMusic(), false);
+
+        UI.setCurrent(this);
+	}
+
+    static setCurrent(curr: UI) {
+        this.curr = curr;
+    }
+
+	// Enables or disables client interration
+	enablePlayer(enable: boolean){
+		let main = document.getElementsByTagName("main")[0].classList;
+		if (enable) main.remove("noclick"); else main.add("noclick");
+	}
+
+	// Initializes the youtube background music object
+	initYouTube(){
+		this.youtube = new YT.Player('youtube', {
+			videoId: "UE9fPWy1_o4",
+			playerVars:  {
+                "autoplay" : 1,
+                "controls" : 0,
+                "loop" : 1,
+                "playlist" : "UE9fPWy1_o4",
+                "rel" : 0,
+                // "version" : 3,
+                "modestbranding" : 1
+            },
+			events: {'onStateChange': initButton}
+		});
+
+		function initButton(){
+			if (UI.curr.ytActive !== undefined)
+				return;
+			UI.curr.ytActive = true;
+			UI.curr.youtube?.playVideo();
+			let timer = setInterval( () => {
+				if (UI.curr.youtube?.getPlayerState() !== YT.PlayerState.PLAYING)
+					UI.curr.youtube?.playVideo();
+				else {
+					clearInterval(timer);
+					UI.curr.toggleMusic_elem.classList.remove("fade");
+				}
+			}, 500);
+		}
+	}
+
+	// Called when client toggles the music
+	toggleMusic(){
+		if (this.youtube?.getPlayerState() !== YT.PlayerState.PLAYING) {
+			this.youtube?.playVideo();
+			this.toggleMusic_elem.classList.remove("fade");
+		} else {
+			this.youtube.pauseVideo();
+			this.toggleMusic_elem.classList.add("fade");
+		}
+	}
+
+	// Enables or disables backgorund music
+	setYouTubeEnabled(enable: boolean){
+		if (this.ytActive === enable)
+			return;
+		if (enable && !this.mute)
+			UI.curr.youtube?.playVideo();
+		else
+			UI.curr.youtube?.pauseVideo();
+		this.ytActive = enable;
+}
+
+	// Called when the player selects a selectable card
+	async selectCard(card: Card) {
+		let row = this.lastRow;
+		let pCard = this.previewCard;
+		if (card === pCard)
+			return;
+		if (pCard === null || card.holder.hand.cards.includes(card)) {
+			this.setSelectable(null, false);
+			this.showPreview(card);
+		} else if (pCard.name === "Decoy" && row) {
+			this.hidePreview();
+			this.enablePlayer(false);
+			Board.curr.toHand(card, row);
+			await Board.curr.moveTo(pCard, row, pCard.holder.hand);
+			pCard.holder.endTurn();
+		}
+	}
+
+	// Called when the player selects a selectable CardContainer
+	async selectRow(row: CardContainer){
+		this.lastRow = row;
+		if (this.previewCard === null) {
+			await UI.curr.viewCardsInContainer(row, undefined);
+			return;
+		}
+		if (this.previewCard.name === "Decoy")
+			return;
+		let card = this.previewCard;
+		let holder = card.holder;
+		this.hidePreview();
+		this.enablePlayer(false);
+		if (card.name === "Scorch"){
+			this.hidePreview();
+			await ability_dict["scorch"].activated?.(card);
+		} else if (card.name === "Decoy") {
+			return;
+		} else {
+			await Board.curr.moveTo(card, row, card.holder.hand);
+		}
+		holder.endTurn();
+	}
+
+	// Called when the client cancels out of a card-preview
+	cancel(){
+		this.hidePreview();
+	}
+
+	// Displays a card preview then enables and highlights potential card destinations
+	showPreview(card: Card) {
+		this.showPreviewVisuals(card);
+		this.setSelectable(card, true);
+		const backgroundElement = document.getElementById("click-background") as HTMLElement;
+        backgroundElement.classList.remove("noclick");
+	}
+
+	// Sets up the graphics and description for a card preview
+	showPreviewVisuals(card: Card){
+		this.previewCard = card;
+		this.preview.classList.remove("hide");
+		const cardElement = this.preview.getElementsByClassName("card-lg")[0] as HTMLElement;
+        cardElement.style.backgroundImage = largeURL(card.faction+"_"+card.filename);
+		let desc_elem = this.preview.getElementsByClassName("card-description")[0] as HTMLElement;
+		this.setDescription(card, desc_elem);
+	}
+
+	// Hides the card preview then disables and removes highlighting from card destinations
+	hidePreview(){
+		const backgroundElement = document.getElementById("click-background") as HTMLElement;
+        backgroundElement.classList.add("noclick");
+		DeckMaker.curr.player_me.hand.cards.forEach( c => c.elem.classList.remove("noclick") );
+
+		this.preview.classList.add("hide");
+		this.setSelectable(null, false);
+		this.previewCard = null;
+		this.lastRow = null;
+	}
+
+	// Sets up description window for a card
+	setDescription(card: Card, desc: HTMLElement){
+		if (card.hero || card.row === "agile" || card.abilities.length > 0 || card.faction === "faction") {
+			desc.classList.remove("hide");
+			let str = card.row === "agile" ? "agile" : "";
+			if (card.abilities.length)
+				str = card.abilities[card.abilities.length-1];
+			if (str === "cerys")
+				str = "muster";
+			if (str.startsWith("avenger"))
+				str = "avenger";
+			if (str === "scorch_c" || str == "scorch_r" || str === "scorch_s")
+				str = "scorch";
+			if (card.row === "leader" || card.faction === "faction" || card.abilities.length === 0 && card.row !== "agile") {
+				const child = desc.children[0] as HTMLElement;
+                child.style.backgroundImage = "";
+            }
+			else {
+				const child = desc.children[0] as HTMLElement;
+                child.style.backgroundImage = iconURL("card_ability_" + str);
+            }
+			desc.children[1].innerHTML = card.desc_name;
+			desc.children[2].innerHTML = card.desc;
+		} else {
+			desc.classList.add("hide");
+		}
+	}
+
+	// Displayed a timed notification to the client
+	async notification(name: string, duration: number){
+		if (!duration)
+			duration = 1200;
+		duration = Math.max(400, duration);
+		const fadeSpeed = 150;
+		this.notif_elem.children[0].id = "notif-" + name;
+		fadeIn(this.notif_elem, fadeSpeed, undefined);
+		fadeOut(this.notif_elem, fadeSpeed, duration - fadeSpeed);
+		await sleep(duration);
+	}
+
+	// Displays a cancellable Carousel for a single card
+	async viewCard(card: Card|null, action?: (container: CardContainer, i: number) => Promise<void>) {
+		if (card === null)
+			return;
+		let container = new CardContainer(undefined);
+		container.cards.push(card);
+		await this.viewCardsInContainer(container, action);
+	}
+
+	// Displays a cancellable Carousel for all cards in a container
+	async viewCardsInContainer(container: CardContainer, action?: (container: CardContainer, i: number) => Promise<void>) {
+		// @ts-expect-error called by the Carousel to cancel it
+        action = action ? action : function() {return this.cancel();};
+		await this.queueCarousel(container, 1, action, () => true, false, true, undefined);
+	}
+
+	// Displays a Carousel menu of filtered container items that match the predicate.
+	// Suspends gameplay until the Carousel is closed. Automatically picks random card if activated for AI player
+	async queueCarousel(container: CardContainer, count: number, action: (container: CardContainer, i: number) => Promise<void>, predicate: (card: Card) => boolean, bSort?: boolean, bQuit?: boolean, title?: string){
+		if (Game.curr.currPlayer === DeckMaker.curr.player_op) {
+			if (DeckMaker.curr.player_op.controller instanceof ControllerAI)
+				for (let i=0; i<count; ++i){
+					let cards = container.cards.reduce<number[]>((a,c,i) => !predicate || predicate(c) ? a.concat([i]) : a, []);
+					await action(container, cards[randomInt(cards.length)]);
+				}
+			return;
+		}
+		let carousel = new Carousel(container, count, action, predicate, bSort, bQuit, title);
+		if (Carousel.curr === undefined || Carousel.curr === null)
+			carousel.start();
+		else {
+			this.carousels.push(carousel);
+			return;
+		}
+		await sleepUntil( () => this.carousels.length === 0 && !Carousel.curr, 100);
+	}
+
+	// Starts the next queued Carousel
+	quitCarousel(){
+		if (this.carousels.length > 0) {
+			this.carousels.shift()?.start();
+		}
+	}
+
+	// Displays a custom confirmation menu
+	async popup(yesName: string, yes: (() => void)|null, noName: string, no: (() => void)|null, title: string, description: string) {
+		let p = new Popup(yesName, yes, noName, no, title, description);
+		await sleepUntil( () => !Popup.curr)
+	}
+
+	// Enables or disables selection and highlighting of rows specific to the card
+	setSelectable(card: Card|null, enable: boolean){
+		if(!enable || card === null) {
+			for (let row of Board.curr.row){
+                row.elem?.classList.remove("row-selectable");
+                row.elem?.classList.remove("noclick");
+                row.elem_special.classList.remove("row-selectable");
+                row.elem_special.classList.remove("noclick");
+                row.elem?.classList.add("card-selectable");
+
+				for (let card of row.cards) {
+					card.elem.classList.add("noclick");
+				}
+			}
+			Weather.curr.elem?.classList.remove("row-selectable");
+			Weather.curr.elem?.classList.remove("noclick");
+			return;
+		}
+		if (card.faction === "weather") {
+			for (let row of Board.curr.row){
+				row.elem?.classList.add("noclick");
+				row.elem_special.classList.add("noclick");
+			}
+			Weather.curr.elem?.classList.add("row-selectable");
+			return;
+		}
+
+		Weather.curr.elem?.classList.add("noclick");
+
+		if (card.name === "Scorch") {
+			for (let r of Board.curr.row){
+				r.elem?.classList.add("row-selectable");
+				r.elem_special.classList.add("row-selectable");
+			}
+			return;
+		}
+		if (card.isSpecial()){
+			for (let i=0; i<6; i++){
+				let r = Board.curr.row[i];
+				if (i < 3 || r.special !== null){
+					r.elem?.classList.add("noclick");
+					r.elem_special.classList.add("noclick");
+				} else {
+					r.elem_special.classList.add("row-selectable");
+				}
+			}
+			return;
+		}
+
+		Board.curr.row.forEach( r => r.elem_special.classList.add("noclick") );
+
+		if (card.name === "Decoy"){
+			for (let i=0; i<6; ++i) {
+				let r = Board.curr.row[i];
+				let units = r.cards.filter(c => c.isUnit());
+				if (i < 3 || units.length === 0) {
+					r.elem?.classList.add("noclick");
+					r.elem_special.classList.add("noclick");
+					r.elem?.classList.remove("card-selectable");
+				} else {
+					r.elem?.classList.add("row-selectable");
+					units.forEach( c => c.elem.classList.remove("noclick") );
+				}
+			}
+			return;
+		}
+
+		let currRows = card.row === "agile" ? [Board.curr.getRow(card, "close", card.holder), Board.curr.getRow(card, "ranged", card.holder)] : [Board.curr.getRow(card, card.row, card.holder)];
+		for (let i=0; i<6; i++){
+			let row = Board.curr.row[i];
+			if (currRows.includes(row)) {
+				row.elem?.classList.add("row-selectable");
+			} else {
+				row.elem?.classList.add("noclick");
+			}
+		}
+
+	}
+}
+
+// Displays up to 5 cards for the client to cycle through and select to perform an action
+// Clicking the middle card performs the action on that card "count" times
+// Clicking adejacent cards shifts the menu to focus on that card

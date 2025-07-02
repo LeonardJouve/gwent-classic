@@ -161,11 +161,11 @@
 
 	<section id="carousel" class="hide">
 		<div>
-			<div class="card-lg" onclick="Carousel.curr.shift(event,-2)"></div>
-			<div class="card-lg" onclick="Carousel.curr.shift(event,-1)"></div>
-			<div class="card-lg" onclick="Carousel.curr.select(event)"></div>
-			<div class="card-lg" onclick="Carousel.curr.shift(event,1)"></div>
-			<div class="card-lg" onclick="Carousel.curr.shift(event,2)"></div>
+			<div class="card-lg"></div>
+			<div class="card-lg"></div>
+			<div class="card-lg"></div>
+			<div class="card-lg"></div>
+			<div class="card-lg"></div>
 		</div>
 		<div class="card-description">
 			<div></div>
@@ -181,8 +181,8 @@
 			<h3></h3>
 			<p></p>
 			<div>
-				<button onclick="Popup.curr.selectYes()"></button>
-				<button onclick="Popup.curr.selectNo()"></button>
+				<button></button>
+				<button></button>
 			</div>
 		</div>
 	</section>
@@ -277,21 +277,7 @@
 
 <div id="toggle-music" class="center music-customization">♫</div>
 
-<script type="text/javascript" src="cards.js"></script>
-<script type="text/javascript" src="decks.js"></script>
-<script type="text/javascript" src="abilities.js"></script>
-<script type="text/javascript" src="factions.js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
-<script type="text/javascript" src="controller.js"></script>
-<script type="text/javascript" src="controller_ai.js"></script>
-<script type="text/javascript" src="player.js"></script>
-<script type="text/javascript" src="card_container.js"></script>
-<script type="text/javascript" src="board.js"></script>
-<script type="text/javascript" src="game.js"></script>
-<script type="text/javascript" src="card.js"></script>
-<script type="text/javascript" src="ui.js"></script>
-<script type="text/javascript" src="carousel.js"></script>
-<script type="text/javascript" src="popup.js"></script>
-<script type="text/javascript" src="deck_maker.js"></script>
+<script type="module" src="./src/main.ts"></script>
 </body>
 </html>

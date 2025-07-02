@@ -1,6 +1,32 @@
-class Card {
+import ability_dict from "./abilities";
+import Board from "./board";
+import CardContainer from "./card_container";
+import {type CardData} from "./cards";
+import Player from "./player";
+import Row from "./row";
+import UI from "./ui";
+import {fadeIn, fadeOut, iconURL, sleep, smallURL} from "./utils";
 
-	constructor(card_data, player) {
+export default class Card {
+    public name: string;
+    public basePower: number;
+    public power: number;
+    public faction: string;
+    public abilities: string[];
+    public row: string;
+    public filename: string;
+    public placed: ((card: Card, row: Row) => Promise<void>)[];
+    public removed: ((card: Card) => void)[];
+    public activated: ((card: Card, player?: Player) => Promise<void>)[];
+    public holder: Player;
+    public hero: boolean;
+    public desc_name: string;
+    public desc: string;
+    public elem: HTMLElement;
+    public noRemove?: boolean;
+    public data?: any;
+
+	constructor(card_data: CardData, player: Player|null) {
 		this.name = card_data.name;
 		this.basePower = this.power = Number(card_data.strength);
 		this.faction = card_data.deck;
@@ -10,7 +36,7 @@ class Card {
 		this.placed = [];
 		this.removed = [];
 		this.activated = [];
-		this.holder = player;
+		this.holder = player as Player;
 
 		this.hero = false;
 		if (this.abilities.length > 0) {
@@ -20,16 +46,16 @@ class Card {
 			}
 			for (let x of this.abilities) {
 				let ab = ability_dict[x];
-				if ("placed" in ab) this.placed.push(ab.placed);
-				if ("removed" in ab) this.removed.push(ab.removed);
-				if ("activated" in ab) this.activated.push(ab.activated);
+				if (ab.placed) this.placed.push(ab.placed);
+				if (ab.removed) this.removed.push(ab.removed);
+				if (ab.activated) this.activated.push(ab.activated);
 			}
 		}
 
 		if (this.row === "leader")
 			this.desc_name = "Leader Ability";
 		else if (this.abilities.length > 0)
-			this.desc_name = ability_dict[this.abilities[this.abilities.length-1]].name;
+			this.desc_name = ability_dict[this.abilities[this.abilities.length-1]].name as string;
 		else if (this.row==="agile")
 			this.desc_name = "agile";
 		else if (this.hero)
@@ -37,7 +63,7 @@ class Card {
 		else
 			this.desc_name = "";
 
-		this.desc = this.row ==="agile" ? ability_dict["agile"].description : "";
+		this.desc = this.row ==="agile" ? ability_dict["agile"].description! : "";
 		for (let i=this.abilities.length-1; i>=0; --i) {
 			this.desc += ability_dict[this.abilities[i]].description;
 		}
@@ -53,13 +79,13 @@ class Card {
 	}
 
 	// Sets and displays the current power of this card
-	setPower(n){
+	setPower(n: number){
 		if (this.name === "Decoy")
 			return;
-		let elem = this.elem.children[0].children[0];
+		let elem = this.elem.children[0].children[0] as HTMLElement;
 		if (n !== this.power) {
 			this.power = n;
-			elem.innerHTML = this.power;
+			elem.innerHTML = String(this.power);
 		}
 		elem.style.color = (n>this.basePower) ? "goldenrod" : (n<this.basePower) ? "red" : "";
 	}
@@ -70,16 +96,16 @@ class Card {
 	}
 
 	// Automatically sends and translates this card to its apropriate row from the passed source
-	async autoplay(source){
-		await board.toRow(this, source);
+	async autoplay(source: CardContainer){
+		await Board.curr.toRow(this, source);
 	}
 
 	// Animates an ability effect
-	async animate(name, bFade = true, bExpand = true) {
+	async animate(name: string, bFade = true, bExpand = true) {
 		if (name === "scorch") {
 			return await this.scorch(name);
 		}
-		let anim = this.elem.children[3];
+		let anim = this.elem.children[3] as HTMLElement;
 		anim.style.backgroundImage = iconURL("anim_" + name);
 		await sleep(50);
 
@@ -98,16 +124,16 @@ class Card {
 	}
 
 	// Animates the scorch effect
-	async scorch(name){
-		let anim = this.elem.children[3];
+	async scorch(name: string){
+		let anim = this.elem.children[3] as HTMLElement;
 		anim.style.backgroundSize = "cover";
 		anim.style.backgroundImage = iconURL("anim_" + name);
 		await sleep(50);
 
-		fadeIn(anim, 300);
+		fadeIn(anim, 300, undefined);
 		await sleep(1300);
 
-		fadeOut(anim, 300);
+		fadeOut(anim, 300, undefined);
 		await sleep(300);
 
 		anim.style.backgroundSize = "";
@@ -125,7 +151,7 @@ class Card {
 	}
 
 	// Compares by type then power then name
-	static compare(a, b){
+	static compare(a: Card, b: Card){
 		var dif = factionRank(a) - factionRank(b);
 		if (dif !== 0)
 			return dif;
@@ -134,15 +160,15 @@ class Card {
 			return dif;
 		return a.name.localeCompare(b.name);
 
-		function factionRank(c){ return c.faction === "special" ? -2 : (c.faction === "weather") ? -1 : 0; }
+		function factionRank(c: Card){ return c.faction === "special" ? -2 : (c.faction === "weather") ? -1 : 0; }
 	}
 
 	// Creates an HTML element based on the card's properties
-	createCardElem(card){
+	createCardElem(card: Card){
 		let elem = document.createElement("div");
 		elem.style.backgroundImage = smallURL(card.faction + "_" + card.filename);
 		elem.classList.add("card");
-		elem.addEventListener("click", () => ui.selectCard(card), false);
+		elem.addEventListener("click", () => UI.curr.selectCard(card), false);
 
 		if (card.row === "leader")
 			return elem;
@@ -167,7 +193,7 @@ class Card {
 		elem.appendChild(row);
 		if (card.row === "close" || card.row === "ranged" || card.row === "siege" || card.row === "agile") {
 			let num = document.createElement("div");
-			num.appendChild( document.createTextNode(card.basePower) );
+			num.appendChild( document.createTextNode(String(card.basePower)) );
 			num.classList.add("center");
 			power.appendChild(num);
 			row.style.backgroundImage = iconURL("card_row_" + card.row);
