@@ -126,7 +126,7 @@ export function compareCards(a: Card, b: Card){
 }
 
 // Translates a card between two containers
-export async function translateTo(player_me: Player, player_op: Player, card: Card, container_source?: CardContainer, container_dest?: CardContainer){
+export async function translateTo(card: Card, container_source?: CardContainer, container_dest?: CardContainer){
     // if (!container_dest || !container_source)
     // 	return;
     // if (container_dest === player_op.hand && container_source === player_op.deck)

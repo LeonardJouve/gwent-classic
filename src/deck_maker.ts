@@ -309,24 +309,8 @@ export default class DeckMaker {
 		if (warning != "")
 			return alert(warning);
 
-		let me_deck = {
-			faction: this.faction,
-			leader: card_dict[this.leader.index],
-			cards: this.deck.filter(x => x.count > 0),
-		};
-
         const deckIndex = randomInt(Object.keys(premade_deck).length);
         const leaders: CardData[] = card_dict.filter(c => c.row === "leader" && c.deck === premade_deck[deckIndex].faction);
-        // const leader = leaders[randomInt(leaders.length)];
-        //op_deck.leader = card_dict.filter(c => c.row === "leader")[12];
-
-		// const cards = premade_deck[deckIndex].cards.map(c => ({index:c[0], count:c[1]}) );
-		// let op_deck = {
-        //     ...premade_deck[deckIndex],
-        //     cards,
-        //     leader,
-        // };
-		//op_deck.leader = card_dict[op_deck.leader];
 
         Players.setPlayers({
             faction: this.faction,
@@ -337,8 +321,6 @@ export default class DeckMaker {
             cards: premade_deck[deckIndex].cards.map(c => ({index:c[0], count:c[1]}) ),
             leader: leaders[randomInt(leaders.length)],
         });
-		// this.player_me = new Player(0, "Player 1", me_deck );
-		// this.player_op = new Player(1, "Player 2", op_deck);
 
 		this.elem.classList.add("hide");
 		Game.curr.startGame();
