@@ -10,6 +10,12 @@ import Popup from "./popup";
 import {fadeIn, fadeOut, iconURL, largeURL, randomInt, sleep, sleepUntil} from "./utils";
 import Weather from "./weather";
 
+declare global {
+    interface Window {
+        onYouTubeIframeAPIReady: () => void;
+    }
+}
+
 export default class UI {
     public toggleMusic_elem: HTMLElement;
     private ytActive: boolean;
@@ -39,8 +45,8 @@ export default class UI {
 		this.toggleMusic_elem = document.getElementById("toggle-music") as HTMLElement;
 		this.toggleMusic_elem.classList.add("fade");
 		this.toggleMusic_elem.addEventListener("click", () => this.toggleMusic(), false);
-
         UI.setCurrent(this);
+        this.initYouTube();
 	}
 
     static setCurrent(curr: UI) {
@@ -54,35 +60,34 @@ export default class UI {
 	}
 
 	// Initializes the youtube background music object
-	initYouTube(){
-		this.youtube = new YT.Player('youtube', {
-			videoId: "UE9fPWy1_o4",
-			playerVars:  {
-                "autoplay" : 1,
-                "controls" : 0,
-                "loop" : 1,
-                "playlist" : "UE9fPWy1_o4",
-                "rel" : 0,
-                // "version" : 3,
-                "modestbranding" : 1
-            },
-			events: {'onStateChange': initButton}
-		});
+	initYouTube() {
+        window.onYouTubeIframeAPIReady = function() {
+            console.log("testetetetet");
+            UI.curr.youtube = new YT.Player('youtube', {
+                videoId: "UE9fPWy1_o4",
+                playerVars:  {
+                    autoplay : 1,
+                    controls : 0,
+                    loop : 1,
+                    playlist : "UE9fPWy1_o4",
+                    rel : 0,
+                    // "version" : 3,
+                    modestbranding : 1
+                },
+                events: {
+                    onReady: (event) => {
+                        UI.curr.ytActive = true;
+                        event.target.playVideo();
+                        UI.curr.toggleMusic_elem.classList.remove("fade");
+                    },
+                }
+            });
+        }
 
-		function initButton(){
-			if (UI.curr.ytActive !== undefined)
-				return;
-			UI.curr.ytActive = true;
-			UI.curr.youtube?.playVideo();
-			let timer = setInterval( () => {
-				if (UI.curr.youtube?.getPlayerState() !== YT.PlayerState.PLAYING)
-					UI.curr.youtube?.playVideo();
-				else {
-					clearInterval(timer);
-					UI.curr.toggleMusic_elem.classList.remove("fade");
-				}
-			}, 500);
-		}
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName("script")[0];
+        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
 	}
 
 	// Called when client toggles the music
