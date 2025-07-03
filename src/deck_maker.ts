@@ -1,4 +1,3 @@
-import Player, {type DeckData} from "./player";
 import premade_deck, {type PremadeDeck} from "./decks";
 import factions from "./factions";
 import {iconURL, largeURL, randomInt} from "./utils";
@@ -9,6 +8,7 @@ import CardContainer from "./card_container";
 import UI from "./ui";
 import Game from "./game";
 import {type CardId} from "./deck";
+import Players from "./players";
 
 type Leader = {
     index: number;
@@ -23,8 +23,6 @@ type CardPile = {
 
 export default class DeckMaker {
 	static curr: DeckMaker;
-    public player_me: Player;
-    public player_op: Player;
     private elem: HTMLElement;
     private bank_elem: HTMLElement;
     private deck_elem: HTMLElement;
@@ -44,13 +42,6 @@ export default class DeckMaker {
     };
 
     constructor() {
-        const deck = {
-            ...premade_deck[0],
-            cards: premade_deck[0].cards.map(c => ({index:c[0], count:c[1]})),
-            leader: card_dict.find(c => c.row === "leader"),
-        } as DeckData;
-        this.player_me = new Player(0, "temp", deck);
-        this.player_op = null as any as Player;
         this.deck = [];
         this.stats = {
             total: 0,
@@ -224,7 +215,7 @@ export default class DeckMaker {
 	selectLeader(){
 		let container = new CardContainer(undefined);
 		container.cards = this.leaders.map(c => {
-			let card = new Card(c.card, DeckMaker.curr.player_me);
+			let card = new Card(c.card, Players.curr.player_me);
 			card.data = c;
 			return card;
 		});
@@ -324,22 +315,30 @@ export default class DeckMaker {
 			cards: this.deck.filter(x => x.count > 0),
 		};
 
-        const leaders: CardData[] = card_dict.filter(c => c.row === "leader" && c.deck === op_deck.faction);
-        const leader = leaders[randomInt(leaders.length)];
+        const deckIndex = randomInt(Object.keys(premade_deck).length);
+        const leaders: CardData[] = card_dict.filter(c => c.row === "leader" && c.deck === premade_deck[deckIndex].faction);
+        // const leader = leaders[randomInt(leaders.length)];
         //op_deck.leader = card_dict.filter(c => c.row === "leader")[12];
 
-        const deckIndex = randomInt(Object.keys(premade_deck).length);
-		const cards = premade_deck[deckIndex].cards.map(c => ({index:c[0], count:c[1]}) );
-		let op_deck = {
-            ...premade_deck[deckIndex],
-            cards,
-            leader,
-        };
+		// const cards = premade_deck[deckIndex].cards.map(c => ({index:c[0], count:c[1]}) );
+		// let op_deck = {
+        //     ...premade_deck[deckIndex],
+        //     cards,
+        //     leader,
+        // };
 		//op_deck.leader = card_dict[op_deck.leader];
 
-
-		this.player_me = new Player(0, "Player 1", me_deck );
-		this.player_op = new Player(1, "Player 2", op_deck);
+        Players.setPlayers({
+            faction: this.faction,
+            leader: card_dict[this.leader.index],
+            cards: this.deck.filter(x => x.count > 0),
+        }, {
+            ...premade_deck[deckIndex],
+            cards: premade_deck[deckIndex].cards.map(c => ({index:c[0], count:c[1]}) ),
+            leader: leaders[randomInt(leaders.length)],
+        });
+		// this.player_me = new Player(0, "Player 1", me_deck );
+		// this.player_op = new Player(1, "Player 2", op_deck);
 
 		this.elem.classList.add("hide");
 		Game.curr.startGame();

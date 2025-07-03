@@ -9,7 +9,7 @@ import factions from "./factions";
 import {iconURL, sleep} from "./utils";
 import ability_dict from "./abilities";
 import Board from "./board";
-import DeckMaker from "./deck_maker";
+import Players from "./players";
 import UI from "./ui";
 import Game from "./game";
 import type Row from "./row";
@@ -138,7 +138,7 @@ export default class Player {
 		if (this.leaderAvailable)
 			this.elem_leader.children[1].classList.remove("hide");
 
-		if (this === DeckMaker.curr.player_me) {
+		if (this === Players.curr.player_me) {
 			const passButton = document.getElementById("pass-button") as HTMLElement;
             passButton.classList.remove("noclick");
 		}
@@ -182,7 +182,7 @@ export default class Player {
 	endTurn(){
 		if (!this.passed && !this.canPlay())
 			this.setPassed(true);
-		if (this === DeckMaker.curr.player_me){
+		if (this === Players.curr.player_me){
 			const passButton = document.getElementById("pass-button") as HTMLElement;
             passButton.classList.add("noclick");
 		}

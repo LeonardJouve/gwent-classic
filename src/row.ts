@@ -1,11 +1,11 @@
 import Card from "./card";
 import CardContainer from "./card_container";
 import {isNumber, sleep} from "./utils";
-import DeckMaker from "./deck_maker";
 import Game from "./game";
 import card_dict from "./cards";
 import Board from "./board";
 import UI from "./ui";
+import Players from "./players";
 
 type Effects = {
     weather: boolean;
@@ -120,7 +120,7 @@ export default class Row extends CardContainer {
 		for (let card of this.cards) {
 			total += this.cardScore(card);
 		}
-		let player = this.elem_parent.parentElement?.id === "field-op" ? DeckMaker.curr.player_op : DeckMaker.curr.player_me;
+		let player = this.elem_parent.parentElement?.id === "field-op" ? Players.curr.player_op : Players.curr.player_me;
 		player.updateTotal(total - this.total);
 		this.total = total;
 		this.elem_parent.getElementsByClassName("row-score")[0].innerHTML = String(this.total);

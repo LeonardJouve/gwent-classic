@@ -7,7 +7,7 @@ import Board from "./board";
 import Game from "./game";
 import UI from "./ui";
 import Weather from "./weather";
-import DeckMaker from "./deck_maker";
+import Players from "./players";
 import Row from "./row";
 import type Grave from "./grave";
 
@@ -440,7 +440,7 @@ const ability_dict: Record<string, Ability> = {
 	},
 	king_bran: {
 		description: "Units only lose half their Strength in bad weather conditions.",
-		placed: async card => Board.curr.row.filter((c,i) => Number(card.holder === DeckMaker.curr.player_me) ^ Number(i<3)).forEach(r => r.halfWeather = true)
+		placed: async card => Board.curr.row.filter((c,i) => Number(card.holder === Players.curr.player_me) ^ Number(i<3)).forEach(r => r.halfWeather = true)
 	}
 };
 

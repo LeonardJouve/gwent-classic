@@ -2,7 +2,7 @@ import type Player from "./player";
 import Row from "./row";
 import {isString, translateTo} from "./utils";
 import Weather from "./weather";
-import DeckMaker from "./deck_maker";
+import Players from "./players";
 import type CardContainer from "./card_container";
 import type Card from "./card";
 
@@ -30,7 +30,7 @@ export default class Board {
 
 	// Get the opponent of this Player
 	opponent(player: Player): Player {
-		return player === DeckMaker.curr.player_me ? DeckMaker.curr.player_op : DeckMaker.curr.player_me;
+		return player === Players.curr.player_me ? Players.curr.player_op : Players.curr.player_me;
 	}
 
 	// Sends and translates a card from the source to the Deck of the card's holder
@@ -76,8 +76,8 @@ export default class Board {
 
 	// Returns the CardCard associated with the row name that the card would be sent to
 	getRow(card: Card, row_name: string, player?: Player): CardContainer {
-		player = player ? player : card ? card.holder : DeckMaker.curr.player_me;
-		let isMe = player === DeckMaker.curr.player_me;
+		player = player ? player : card ? card.holder : Players.curr.player_me;
+		let isMe = player === Players.curr.player_me;
 		let isSpy = card.abilities.includes("spy");
 		switch (row_name) {
 			case "weather": return Weather.curr; break;
@@ -93,8 +93,8 @@ export default class Board {
 
 	// Updates which player currently is in the lead
 	updateLeader() {
-		let dif = DeckMaker.curr.player_me.total - DeckMaker.curr.player_op.total;
-		DeckMaker.curr.player_me.setWinning(dif > 0);
-		DeckMaker.curr.player_op.setWinning(dif < 0);
+		let dif = Players.curr.player_me.total - Players.curr.player_op.total;
+		Players.curr.player_me.setWinning(dif > 0);
+		Players.curr.player_op.setWinning(dif < 0);
 	}
 }

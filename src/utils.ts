@@ -1,4 +1,4 @@
-import DeckMaker from "./deck_maker";
+import Players from "./players";
 import Row from "./row";
 import ControllerAI from "./controller_ai";
 import Grave from "./grave";
@@ -116,7 +116,7 @@ export function sleepUntil(predicate: () => boolean, ms?: number): Promise<void>
 export async function translateTo(card: Card, container_source?: CardContainer, container_dest?: CardContainer){
 	if (!container_dest || !container_source)
 		return;
-	if (container_dest === DeckMaker.curr.player_op.hand && container_source === DeckMaker.curr.player_op.deck)
+	if (container_dest === Players.curr.player_op.hand && container_source === Players.curr.player_op.deck)
 		return;
 
 	let elem = card.elem;
@@ -135,7 +135,7 @@ export async function translateTo(card: Card, container_source?: CardContainer, 
 		let mid = trueOffset(container_source.elem as HTMLElement, true) + (container_source.elem as HTMLElement).offsetWidth/2;
 		x += trueOffset(elem, true) - mid;
 	}
-	if (container_source instanceof Row && container_dest === DeckMaker.curr.player_me.hand)
+	if (container_source instanceof Row && container_dest === Players.curr.player_me.hand)
 		y *= 7/8;
 	await translate(elem, x, y);
 

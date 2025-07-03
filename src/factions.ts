@@ -3,11 +3,11 @@
 import Board from "./board";
 import Game from "./game";
 import UI from "./ui";
-import DeckMaker from "./deck_maker";
 import { randomInt } from "./utils";
 import HandAI from "./hand_ai";
 import type Card from "./card";
 import type Player from "./player";
+import Players from "./players";
 
 type Faction = {
     name: string;
@@ -34,7 +34,7 @@ const factions: Record<string, Faction> = {
 	monsters: {
 		name: "Monsters",
 		factionAbility: player => Game.curr.roundEnd.push(async () => {
-			let units = Board.curr.row.filter( (r,i) => Number(player === DeckMaker.curr.player_me) ^ Number(i < 3))
+			let units = Board.curr.row.filter( (r,i) => Number(player === Players.curr.player_me) ^ Number(i < 3))
 				.reduce<Card[]>((a,r) => r.cards.filter(c => c.isUnit()).concat(a), []);
 			if (units.length === 0)
 				return false;
@@ -53,7 +53,7 @@ const factions: Record<string, Faction> = {
 		name: "Scoia'tael",
 		factionAbility: player => Game.curr.gameStart.push( async () => {
 			let notif = "";
-			if (player === DeckMaker.curr.player_me) {
+			if (player === Players.curr.player_me) {
 				await UI.curr.popup("Go First", () => Game.curr.firstPlayer = player, "Let Opponent Start", () => Game.curr.firstPlayer = player.opponent(), "Would you like to go first?", "The Scoia'tael faction perk allows you to decide who will get to go first.");
 				notif = Game.curr.firstPlayer?.tag + "-first";
 			} else if (player.hand instanceof HandAI) {

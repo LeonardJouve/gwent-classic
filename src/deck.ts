@@ -3,10 +3,10 @@ import Card from "./card";
 import CardContainer from "./card_container";
 import card_dict, {type CardData} from "./cards";
 import {iconURL} from "./utils";
-import DeckMaker from "./deck_maker";
 import type Player from "./player";
 import type Hand from "./hand";
 import type HandAI from "./hand_ai";
+import Players from "./players";
 
 export type CardId = {
     count: number;
@@ -58,7 +58,7 @@ export default class Deck extends CardContainer {
 
 	// Sends the top card to the passed hand
 	async draw(hand: Hand|HandAI){
-		if (hand === DeckMaker.curr.player_op.hand)
+		if (hand === Players.curr.player_op.hand)
 			hand.addCard(this.removeCard(0, undefined));
 		else
 			await Board.curr.toHand(this.cards[0], this);

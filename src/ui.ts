@@ -4,8 +4,8 @@ import type Card from "./card";
 import CardContainer from "./card_container";
 import Carousel from "./carousel";
 import ControllerAI from "./controller_ai";
-import DeckMaker from "./deck_maker";
 import Game from "./game";
+import Players from "./players";
 import Popup from "./popup";
 import {fadeIn, fadeOut, iconURL, largeURL, randomInt, sleep, sleepUntil} from "./utils";
 import Weather from "./weather";
@@ -31,7 +31,7 @@ export default class UI {
 		this.previewCard = null;
 		this.lastRow = null;
 		const passButton = document.getElementById("pass-button") as HTMLElement;
-        passButton.addEventListener("click", () => DeckMaker.curr.player_me.passRound(), false);
+        passButton.addEventListener("click", () => Players.curr.player_me.passRound(), false);
 		const cancelElement = document.getElementById("click-background") as HTMLElement;
         cancelElement.addEventListener("click", () => UI.curr.cancel(), false);
 		this.youtube;
@@ -176,7 +176,7 @@ export default class UI {
 	hidePreview(){
 		const backgroundElement = document.getElementById("click-background") as HTMLElement;
         backgroundElement.classList.add("noclick");
-		DeckMaker.curr.player_me.hand.cards.forEach( c => c.elem.classList.remove("noclick") );
+		Players.curr.player_me.hand.cards.forEach( c => c.elem.classList.remove("noclick") );
 
 		this.preview.classList.add("hide");
 		this.setSelectable(null, false);
@@ -243,8 +243,8 @@ export default class UI {
 	// Displays a Carousel menu of filtered container items that match the predicate.
 	// Suspends gameplay until the Carousel is closed. Automatically picks random card if activated for AI player
 	async queueCarousel(container: CardContainer, count: number, action: (container: CardContainer, i: number) => Promise<void>, predicate: (card: Card) => boolean, bSort?: boolean, bQuit?: boolean, title?: string){
-		if (Game.curr.currPlayer === DeckMaker.curr.player_op) {
-			if (DeckMaker.curr.player_op.controller instanceof ControllerAI)
+		if (Game.curr.currPlayer === Players.curr.player_op) {
+			if (Players.curr.player_op.controller instanceof ControllerAI)
 				for (let i=0; i<count; ++i){
 					let cards = container.cards.reduce<number[]>((a,c,i) => !predicate || predicate(c) ? a.concat([i]) : a, []);
 					await action(container, cards[randomInt(cards.length)]);
