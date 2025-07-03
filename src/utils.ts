@@ -1,13 +1,13 @@
-import Players from "./players";
-import Row from "./row";
-import ControllerAI from "./controller_ai";
-import Grave from "./grave";
-import HandAI from "./hand_ai";
-import Deck from "./deck";
-import Hand from "./hand";
-import Weather from "./weather";
-import CardContainer from "./card_container";
-import Card from "./card";
+import type Card from "./card";
+import type Player from "./player";
+import type CardContainer from "./card_container";
+// import Row from "./row";
+// import Grave from "./grave";
+// import HandAI from "./hand_ai";
+// import Deck from "./deck";
+// import Hand from "./hand";
+// import Weather from "./weather";
+// import ControllerAI from "./controller_ai";
 
 // Translates an element by x from the left and y from the top
 export async function translate(elem: HTMLElement, x: number, y: number) {
@@ -112,73 +112,86 @@ export function sleepUntil(predicate: () => boolean, ms?: number): Promise<void>
 	});
 }
 
+// Compares by type then power then name
+export function compareCards(a: Card, b: Card){
+    var dif = factionRank(a) - factionRank(b);
+    if (dif !== 0)
+        return dif;
+    dif = a.basePower - b.basePower;
+    if (dif && dif !== 0)
+        return dif;
+    return a.name.localeCompare(b.name);
+
+    function factionRank(c: Card){ return c.faction === "special" ? -2 : (c.faction === "weather") ? -1 : 0; }
+}
+
 // Translates a card between two containers
-export async function translateTo(card: Card, container_source?: CardContainer, container_dest?: CardContainer){
-	if (!container_dest || !container_source)
-		return;
-	if (container_dest === Players.curr.player_op.hand && container_source === Players.curr.player_op.deck)
-		return;
+export async function translateTo(player_me: Player, player_op: Player, card: Card, container_source?: CardContainer, container_dest?: CardContainer){
+    // if (!container_dest || !container_source)
+    // 	return;
+    // if (container_dest === player_op.hand && container_source === player_op.deck)
+    // 	return;
 
-	let elem = card.elem;
-	let source = !container_source ? card.elem : getSourceElem(card, container_source, container_dest);
-	let dest = getDestinationElem(card, container_source, container_dest);
-	if (!isInDocument(elem))
-		source.appendChild(elem);
-	let x = trueOffsetLeft(dest) - trueOffsetLeft(elem) +dest.offsetWidth/2 - elem.offsetWidth;
-	let y = trueOffsetTop(dest) - trueOffsetTop(elem) +dest.offsetHeight/2 - elem.offsetHeight/2;
-	if (container_dest instanceof Row && container_dest.cards.length !== 0 && !card.isSpecial() ){
-		x += (container_dest.getSortedIndex(card) === container_dest.cards.length) ? elem.offsetWidth/2 : -elem.offsetWidth/2;
-	}
-	if (card.holder.controller instanceof ControllerAI)
-		x += elem.offsetWidth/2;
-	if (container_source instanceof Row && container_dest instanceof Grave && !card.isSpecial()) {
-		let mid = trueOffset(container_source.elem as HTMLElement, true) + (container_source.elem as HTMLElement).offsetWidth/2;
-		x += trueOffset(elem, true) - mid;
-	}
-	if (container_source instanceof Row && container_dest === Players.curr.player_me.hand)
-		y *= 7/8;
-	await translate(elem, x, y);
+    // let elem = card.elem;
+    // let source = !container_source ? card.elem : getSourceElem(card, container_source, container_dest);
+    // let dest = getDestinationElem(card, container_source, container_dest);
+    // if (!isInDocument(elem))
+    // 	source.appendChild(elem);
+    // let x = trueOffsetLeft(dest) - trueOffsetLeft(elem) +dest.offsetWidth/2 - elem.offsetWidth;
+    // let y = trueOffsetTop(dest) - trueOffsetTop(elem) +dest.offsetHeight/2 - elem.offsetHeight/2;
+    // if (container_dest instanceof Row && container_dest.cards.length !== 0 && !card.isSpecial() ){
+    // 	x += (container_dest.getSortedIndex(card) === container_dest.cards.length) ? elem.offsetWidth/2 : -elem.offsetWidth/2;
+    // }
+    // if (card.holder.controller instanceof ControllerAI)
+    // 	x += elem.offsetWidth/2;
+    // if (container_source instanceof Row && container_dest instanceof Grave && !card.isSpecial()) {
+    // 	let mid = trueOffset(container_source.elem as HTMLElement, true) + (container_source.elem as HTMLElement).offsetWidth/2;
+    // 	x += trueOffset(elem, true) - mid;
+    // }
+    // if (container_source instanceof Row && container_dest === player_me.hand)
+    // 	y *= 7/8;
+    // await translate(elem, x, y);
 
-	// Returns true if the element is visible in the viewport
-	function isInDocument(elem: HTMLElement){
-		return elem.getBoundingClientRect().width !== 0;
-	}
+    // // Returns true if the element is visible in the viewport
+    // function isInDocument(elem: HTMLElement){
+    // 	return elem.getBoundingClientRect().width !== 0;
+    // }
 
-	// Returns the true offset of a nested element in the viewport
-	function trueOffset(elem: HTMLElement, left: boolean){
-		let total =0
-		let curr = elem;
-		while (curr){
-			total += (left ? curr.offsetLeft : curr.offsetTop);
-			curr = curr.parentElement as HTMLElement;
-		}
-		return total;
-	}
-	function trueOffsetLeft(elem: HTMLElement) {	return trueOffset(elem, true); }
-	function trueOffsetTop(elem: HTMLElement) { return trueOffset(elem, false); }
+    // // Returns the true offset of a nested element in the viewport
+    // function trueOffset(elem: HTMLElement, left: boolean){
+    // 	let total =0
+    // 	let curr = elem;
+    // 	while (curr){
+    // 		total += (left ? curr.offsetLeft : curr.offsetTop);
+    // 		curr = curr.parentElement as HTMLElement;
+    // 	}
+    // 	return total;
+    // }
+    // function trueOffsetLeft(elem: HTMLElement) {	return trueOffset(elem, true); }
+    // function trueOffsetTop(elem: HTMLElement) { return trueOffset(elem, false); }
 
-	// Returns the source container's element to transition from
-	function getSourceElem(card: Card, source: CardContainer, dest: CardContainer){
-		if (source instanceof HandAI)
-			return source.hidden_elem;
-		if (source instanceof Deck && source.elem)
-			return source.elem.children[source.elem.children.length-2];
-		return source.elem as HTMLElement;
-	}
+    // // Returns the source container's element to transition from
+    // function getSourceElem(card: Card, source: CardContainer, dest: CardContainer){
+    // 	if (source instanceof HandAI)
+    // 		return source.hidden_elem;
+    // 	if (source instanceof Deck && source.elem)
+    // 		return source.elem.children[source.elem.children.length-2];
+    // 	return source.elem as HTMLElement;
+    // }
 
-	// Returns the destination container's element to transition to
-	function getDestinationElem(card: Card, source: CardContainer, dest: CardContainer): HTMLElement{
-		if (dest instanceof HandAI)
-			return dest.hidden_elem;
-		if (card.isSpecial() && dest instanceof Row)
-			return dest.elem_special;
-		if (dest instanceof Row || dest instanceof Hand || dest instanceof Weather){
-			if (dest.cards.length === 0)
-				return dest.elem as HTMLElement;
-			let index = dest.getSortedIndex(card);
-			let dcard = dest.cards[index === dest.cards.length ? index-1 : index];
-			return dcard.elem;
-		}
-		return dest.elem as HTMLElement;
-	}
+    // // Returns the destination container's element to transition to
+    // function getDestinationElem(card: Card, source: CardContainer, dest: CardContainer): HTMLElement{
+    // 	if (dest instanceof HandAI)
+    // 		return dest.hidden_elem;
+    // 	if (card.isSpecial() && dest instanceof Row)
+    // 		return dest.elem_special;
+    // 	if (dest instanceof Row || dest instanceof Hand || dest instanceof Weather){
+    // 		if (dest.cards.length === 0)
+    // 			return dest.elem as HTMLElement;
+    // 		let index = dest.getSortedIndex(card);
+    // 		let dcard = dest.cards[index === dest.cards.length ? index-1 : index];
+    // 		return dcard.elem;
+    // 	}
+    // 	return dest.elem as HTMLElement;
+    // }
 }

@@ -150,19 +150,6 @@ export default class Card {
 		return this.name === "Commander's Horn" || this.name === "Mardroeme";
 	}
 
-	// Compares by type then power then name
-	static compare(a: Card, b: Card){
-		var dif = factionRank(a) - factionRank(b);
-		if (dif !== 0)
-			return dif;
-		dif = a.basePower - b.basePower;
-		if (dif && dif !== 0)
-			return dif;
-		return a.name.localeCompare(b.name);
-
-		function factionRank(c: Card){ return c.faction === "special" ? -2 : (c.faction === "weather") ? -1 : 0; }
-	}
-
 	// Creates an HTML element based on the card's properties
 	createCardElem(card: Card){
 		let elem = document.createElement("div");

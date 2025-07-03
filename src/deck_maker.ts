@@ -1,6 +1,6 @@
 import premade_deck, {type PremadeDeck} from "./decks";
 import factions from "./factions";
-import {iconURL, largeURL, randomInt} from "./utils";
+import {compareCards, iconURL, largeURL, randomInt} from "./utils";
 import card_dict, {type CardData} from "./cards";
 import Card from "./card";
 import Carousel from "./carousel";
@@ -131,7 +131,7 @@ export default class DeckMaker {
 			let a = card_dict[id1.index], b = card_dict[id2.index];
 			let c1 = {name: a.name, basePower: -a.strength, faction: a.deck} as Card;
 			let c2 = {name: b.name, basePower: -b.strength, faction: b.deck} as Card;
-			return Card.compare(c1, c2);
+			return compareCards(c1, c2);
 		});
 
 

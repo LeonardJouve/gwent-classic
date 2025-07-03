@@ -1,5 +1,5 @@
-import Card from "./card";
-import {isNumber, randomInt} from "./utils";
+import type Card from "./card";
+import {compareCards, isNumber, randomInt} from "./utils";
 
 export default class CardContainer {
 	public elem?: HTMLElement;
@@ -81,7 +81,7 @@ export default class CardContainer {
 	// Returns the expected index of a card in a sorted CardContainer
 	getSortedIndex(card: Card){
 		for (var i=0; i<this.cards.length; ++i)
-			if (Card.compare(card, this.cards[i]) < 0)
+			if (compareCards(card, this.cards[i]) < 0)
 				break;
 		return i;
 	}

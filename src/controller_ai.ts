@@ -1,12 +1,12 @@
 import ability_dict from "./abilities";
 import Board from "./board";
-import Card from "./card";
+import type Card from "./card";
 import CardContainer from "./card_container";
 import Game from "./game";
 import type Grave from "./grave";
 import type Player from "./player";
 import type Row from "./row";
-import {randomInt} from "./utils";
+import {compareCards, randomInt} from "./utils";
 import Weather from "./weather";
 
 type RowData = {
@@ -155,7 +155,7 @@ export default class ControllerAI {
 		}
 
 		for (let group of Object.values(groups)) {
-			group.sort(Card.compare);
+			group.sort(compareCards);
 			group.pop();
 			cards.push(...group);
 		}
@@ -167,7 +167,7 @@ export default class ControllerAI {
 		}
 
 		let normal = card.holder.hand.cards.filter(c => c.abilities.length === 0);
-		normal.sort(Card.compare);
+		normal.sort(compareCards);
 		cards.push(...normal);
 		return cards;
 	}

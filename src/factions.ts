@@ -3,7 +3,7 @@
 import Board from "./board";
 import Game from "./game";
 import UI from "./ui";
-import { randomInt } from "./utils";
+import {randomInt} from "./utils";
 import HandAI from "./hand_ai";
 import type Card from "./card";
 import type Player from "./player";
