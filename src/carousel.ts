@@ -1,7 +1,7 @@
-import Card from "./card";
+import type Card from "./card";
 import type CardContainer from "./card_container";
 import UI from "./ui";
-import {largeURL} from "./utils";
+import {compareCards, largeURL} from "./utils";
 
 export default class Carousel {
 	private container: CardContainer;
@@ -24,7 +24,7 @@ export default class Carousel {
     constructor(container: CardContainer, count: number, action: (container: CardContainer, i: number) => Promise<void>, predicate: (card: Card) => boolean, bSort = false, bExit = false, title?: string) {
 		if (count <= 0 || !container || !action || container.cards.length === 0)
 			throw new Error("invalid Carousel constructor parameters");
-		this.container = container;
+        this.container = container;
 		this.count = count;
 		this.action = action;
 		this.predicate = predicate;
@@ -62,7 +62,7 @@ export default class Carousel {
 		if (this.indices.length <= 0)
 			return this.exit();
 		if (this.bSort)
-			this.indices.sort( (a, b) => Card.compare(this.container.cards[a],this.container.cards[b]) );
+			this.indices.sort( (a, b) => compareCards(this.container.cards[a],this.container.cards[b]) );
 
 		this.update();
 		Carousel.setCurrent(this);
