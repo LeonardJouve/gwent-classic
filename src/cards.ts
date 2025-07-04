@@ -1,4 +1,4 @@
-export type CardData = {
+export interface CardData {
     name: string;
     id: string;
     deck: string;
@@ -7,7 +7,7 @@ export type CardData = {
     ability: string;
     filename: string;
     count: string;
-};
+}
 
 const card_dict: CardData[] = [
     {

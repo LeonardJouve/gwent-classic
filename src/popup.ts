@@ -11,7 +11,7 @@ export default class Popup {
 		this.no = no ? no : ()=>{};
 
 		this.elem = document.getElementById("popup") as HTMLElement;
-		let main = this.elem.children[0] as HTMLElement;
+		const main = this.elem.children[0] as HTMLElement;
         main.children[0].innerHTML = header ? header : "";
         main.children[1].innerHTML = description ? description : "";
         main.children[2].children[0].innerHTML = (yesName) ? yesName : "Yes";

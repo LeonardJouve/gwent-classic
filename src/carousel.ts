@@ -119,9 +119,9 @@ export default class Carousel {
 		if (this.index >= this.indices.length)
 			this.index =  this.indices.length-1;
 		for (let i=0; i<this.previews.length; i++) {
-			let curr = this.index - 2 + i;
+			const curr = this.index - 2 + i;
 			if (curr >= 0 && curr < this.indices.length) {
-				let card = this.container.cards[this.indices[curr]];
+				const card = this.container.cards[this.indices[curr]];
 				this.previews[i].style.backgroundImage = largeURL(card.faction + "_" + card.filename);
 				this.previews[i].classList.remove("hide");
 				this.previews[i].classList.remove("noclick");
@@ -136,7 +136,7 @@ export default class Carousel {
 
 	// Clears and quits the current carousel
 	exit() {
-		for (let x of this.previews)
+		for (const x of this.previews)
 			x.style.backgroundImage = "";
 		this.elem.classList.add("hide");
 		Carousel.clearCurrent();

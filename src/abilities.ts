@@ -11,7 +11,7 @@ import Players from "./players";
 import Row from "./row";
 import type Grave from "./grave";
 
-export type Ability = {
+export interface Ability {
     name?: string;
     description?: string;
     placed?: (card: Card, row?: Row) => Promise<void>;
@@ -61,7 +61,7 @@ const ability_dict: Record<string, Ability> = {
 		description: "Triggers transformation of all Berserker cards on the same row. ",
 		placed: async (card, row) => {
             if (!row) return;
-			let berserkers = row.findCards(c => c.abilities.includes("berserker"));
+			const berserkers = row.findCards(c => c.abilities.includes("berserker"));
 			await Promise.all(berserkers.map(async c => await ability_dict["berserker"].placed?.(c, row)));
 		}
 	},
@@ -73,7 +73,7 @@ const ability_dict: Record<string, Ability> = {
             if (row.effects.mardroeme === 0)
 				return;
 			row.removeCard(card);
-			let cardId = card.name.indexOf("Young") === -1 ? 206 : 207;
+			const cardId = card.name.indexOf("Young") === -1 ? 206 : 207;
 			await row.addCard(new Card(card_dict[cardId], card.holder));
 		}
 	},
@@ -87,12 +87,12 @@ const ability_dict: Record<string, Ability> = {
 		placed: async (card, row) => {
 			if (row !== undefined)
 				row.cards.splice( row.cards.indexOf(card), 1);
-			let maxUnits = Board.curr.row.map<[Row, Card[]]>( r => [r,r.maxUnits()] ).filter( p => p[1].length > 0);
+			const maxUnits = Board.curr.row.map<[Row, Card[]]>( r => [r,r.maxUnits()] ).filter( p => p[1].length > 0);
 			if (row !== undefined)
 				row.cards.push(card);
-			let maxPower = maxUnits.reduce( (a,p) => Math.max(a, p[1][0].power), 0 );
-			let scorched = maxUnits.filter( p => p[1][0].power === maxPower);
-			let cards = scorched.reduce<[Row, Card][]>( (a,p) => a.concat( p[1].map(u => [p[0], u])), []);
+			const maxPower = maxUnits.reduce( (a,p) => Math.max(a, p[1][0].power), 0 );
+			const scorched = maxUnits.filter( p => p[1][0].power === maxPower);
+			const cards = scorched.reduce<[Row, Card][]>( (a,p) => a.concat( p[1].map(u => [p[0], u])), []);
 
 			await Promise.all(cards.map( async u => await u[1].animate("scorch", true, false)) );
 			await Promise.all(cards.map( async u => await Board.curr.toGrave(u[1], u[0])) );
@@ -124,10 +124,10 @@ const ability_dict: Record<string, Ability> = {
 		name:"muster",
 		description: "Find any cards with the same name in your deck and play them instantly. ",
 		placed: async (card) => {
-			let i = card.name.indexOf('-');
-			let cardName = i === -1 ?  card.name : card.name.substring(0, i);
-			let pred: (card: Card) => boolean = c => c.name.startsWith(cardName);
-			let units = card.holder.hand.getCards(pred)
+			const i = card.name.indexOf('-');
+			const cardName = i === -1 ?  card.name : card.name.substring(0, i);
+			const pred: (card: Card) => boolean = c => c.name.startsWith(cardName);
+			const units = card.holder.hand.getCards(pred)
                 .map<[CardContainer, Card]>(x => [card.holder.hand, x])
 			    .concat(card.holder.deck.getCards(pred).map( x => [card.holder.deck, x] ) );
 			if (units.length === 0)
@@ -152,11 +152,11 @@ const ability_dict: Record<string, Ability> = {
 		name: "medic",
 		description: "Choose one card from your discard pile and play it instantly (no Heroes or Special Cards). ",
 		placed: async (card) => {
-			let grave = Board.curr.getRow(card, "grave", card.holder) as Grave;
-			let units = card.holder.grave.findCards(c => c.isUnit());
+			const grave = Board.curr.getRow(card, "grave", card.holder) as Grave;
+			const units = card.holder.grave.findCards(c => c.isUnit());
 			if (units.length <= 0)
 				return;
-			let wrapper: {card: Card|null} = {card : null};
+			const wrapper: {card: Card|null} = {card : null};
 			if (Game.curr.randomRespawn) {
 				 wrapper.card = grave.findCardsRandom(c => c.isUnit())[0];
 			} else if (card.holder.controller instanceof ControllerAI)
@@ -165,7 +165,7 @@ const ability_dict: Record<string, Ability> = {
 				await UI.curr.queueCarousel(card.holder.grave, 1, async (c, i) => {
                     wrapper.card=c.cards[i];
                 }, c => c.isUnit(), true);
-			let res = wrapper.card;
+			const res = wrapper.card;
             if (res) {
                 grave.removeCard(res);
                 grave.addCard(res);
@@ -183,7 +183,7 @@ const ability_dict: Record<string, Ability> = {
 		name: "Tight Bond",
 		description: "Place next to a card with the same name to double the strength of both cards. ",
 		placed: async card => {
-			let bonds = Board.curr.getRow(card, card.row, card.holder).findCards(c => c.name === card.name);
+			const bonds = Board.curr.getRow(card, card.row, card.holder).findCards(c => c.name === card.name);
 			if (bonds.length > 1)
 				await Promise.all( bonds.map(c => c.animate("bond")) );
 		}
@@ -192,7 +192,7 @@ const ability_dict: Record<string, Ability> = {
 		name: "Avenger",
 		description: "When this card is removed from the battlefield, it summons a powerful new Unit Card to take its place. ",
 		removed: async (card) => {
-			let bdf = new Card(card_dict[21], card.holder);
+			const bdf = new Card(card_dict[21], card.holder);
 			bdf.removed.push( () => setTimeout( () => bdf.holder.grave.removeCard(bdf), 1001) );
 			await Board.curr.addCardToRow(bdf, "close", card.holder);
 		},
@@ -202,7 +202,7 @@ const ability_dict: Record<string, Ability> = {
 		name: "Avenger",
 		description: "When this card is removed from the battlefield, it summons a powerful new Unit Card to take its place. ",
 		removed: async card => {
-			let bdf = new Card(card_dict[196], card.holder);
+			const bdf = new Card(card_dict[196], card.holder);
 			bdf.removed.push( () => setTimeout( () => bdf.holder.grave.removeCard(bdf), 1001) );
 			await Board.curr.addCardToRow(bdf, "close", card.holder);
 		},
@@ -211,7 +211,7 @@ const ability_dict: Record<string, Ability> = {
 	foltest_king: {
 		description: "Pick an Impenetrable Fog card from your deck and play it instantly.",
 		activated: async card => {
-			let out = card.holder.deck.findCard(c => c.name === "Impenetrable Fog");
+			const out = card.holder.deck.findCard(c => c.name === "Impenetrable Fog");
 			if (out)
 				await out.autoplay(card.holder.deck);
 		},
@@ -240,7 +240,7 @@ const ability_dict: Record<string, Ability> = {
 	emhyr_imperial: {
 		description: "Pick a Torrential Rain card from your deck and play it instantly.",
 		activated: async card => {
-			let out = card.holder.deck.findCard(c => c.name === "Torrential Rain");
+			const out = card.holder.deck.findCard(c => c.name === "Torrential Rain");
 			if (out)
 				await out.autoplay(card.holder.deck);
 		},
@@ -251,13 +251,13 @@ const ability_dict: Record<string, Ability> = {
 		activated: async card => {
 			if (card.holder.controller instanceof ControllerAI)
 				return;
-			let container = new CardContainer();
+			const container = new CardContainer();
 			container.cards = card.holder.opponent().hand.findCardsRandom(() => true, 3);
 			Carousel.curr?.cancel();
 			await UI.curr.viewCardsInContainer(container, undefined);
 		},
 		weight: card => {
-			let count = card.holder.opponent().hand.cards.length;
+			const count = card.holder.opponent().hand.cards.length;
 			return count === 0 ? 0 : Math.max(10, 10 * (8 - count));
 		}
 	},
@@ -267,18 +267,18 @@ const ability_dict: Record<string, Ability> = {
 	emhyr_relentless: {
 		description: "Draw a card from your opponent's discard pile.",
 		activated: async card => {
-			let grave = Board.curr.getRow(card, "grave", card.holder.opponent()) as Grave;
+			const grave = Board.curr.getRow(card, "grave", card.holder.opponent()) as Grave;
 			if (grave.findCards(c => c.isUnit()).length === 0)
 				return;
 			if (card.holder.controller instanceof ControllerAI) {
-				let newCard = card.holder.controller.medic(card, grave);
+				const newCard = card.holder.controller.medic(card, grave);
 				newCard.holder = card.holder;
 				await Board.curr.toHand(newCard, grave);
 				return;
 			}
 			Carousel.curr?.cancel();
 			await UI.curr.queueCarousel(grave, 1, async (c,i) => {
-				let newCard = c.cards[i];
+				const newCard = c.cards[i];
 				newCard.holder = card.holder;
 				Board.curr.toHand(newCard, grave);
 			}, c => c.isUnit(), true, undefined, undefined);
@@ -315,10 +315,10 @@ const ability_dict: Record<string, Ability> = {
 	eredin_destroyer: {
 		description: "Discard 2 card and draw 1 card of your choice from your deck.",
 		activated: async (card) => {
-			let hand = Board.curr.getRow(card, "hand", card.holder);
-			let deck = Board.curr.getRow(card, "deck", card.holder);
+			const hand = Board.curr.getRow(card, "hand", card.holder);
+			const deck = Board.curr.getRow(card, "deck", card.holder);
 			if (card.holder.controller instanceof ControllerAI) {
-				let cards = card.holder.controller.discardOrder(card).splice(0,2).filter(c => c.basePower < 7);
+				const cards = card.holder.controller.discardOrder(card).splice(0,2).filter(c => c.basePower < 7);
 				await Promise.all(cards.map(async c => await Board.curr.toGrave(c, card.holder.hand)));
 				card.holder.deck.draw(card.holder.hand);
 				return;
@@ -328,7 +328,7 @@ const ability_dict: Record<string, Ability> = {
 			await UI.curr.queueCarousel(deck, 1, (c,i) => Board.curr.toHand(c.cards[i], deck), () => true, true);
 		},
 		weight: (card, ai) => {
-			let cards = ai.discardOrder(card).splice(0,2).filter(c => c.basePower < 7);
+			const cards = ai.discardOrder(card).splice(0,2).filter(c => c.basePower < 7);
 			if (cards.length < 2)
 				return 0;
 			return cards[0].abilities.includes("muster") ? 50 : 25;
@@ -337,7 +337,7 @@ const ability_dict: Record<string, Ability> = {
 	eredin_king: {
 		description: "Pick any weather card from your deck and play it instantly.",
 		activated: async card => {
-			let deck = Board.curr.getRow(card, "deck", card.holder);
+			const deck = Board.curr.getRow(card, "deck", card.holder);
 			if (card.holder.controller instanceof ControllerAI) {
 				await ability_dict["eredin_king"].helper?.(card).card.autoplay(card.holder.deck);
 			} else {
@@ -347,11 +347,11 @@ const ability_dict: Record<string, Ability> = {
 		},
 		weight: (card, ai, max) => ability_dict["eredin_king"].helper?.(card).weight,
 		helper: card => {
-			let weather = card.holder.deck.cards.filter(c => c.row === "weather").reduce<Card[]>((a,c) =>a.map(c => c.name).includes(c.name) ? a : a.concat([c]), [] );
+			const weather = card.holder.deck.cards.filter(c => c.row === "weather").reduce<Card[]>((a,c) =>a.map(c => c.name).includes(c.name) ? a : a.concat([c]), [] );
 
 			let out, weight = -1;
 			weather.forEach( c => {
-				let w = card.holder.controller.weightWeatherFromDeck(c, c.abilities[0]);
+				const w = card.holder.controller.weightWeatherFromDeck(c, c.abilities[0]);
 				if (w > weight) {
 					weight = w;
 					out = c;
@@ -378,7 +378,7 @@ const ability_dict: Record<string, Ability> = {
 		description: "Draw an extra card at the beginning of the battle.",
 		placed: async card => {
                 Game.curr.gameStart.push( async () => {
-                let draw = card.holder.deck.removeCard(0);
+                const draw = card.holder.deck.removeCard(0);
                 card.holder.hand.addCard( draw );
                 return true;
             })
@@ -387,7 +387,7 @@ const ability_dict: Record<string, Ability> = {
 	francesca_pureblood: {
 		description: "Pick a Biting Frost card from your deck and play it instantly.",
 		activated: async card => {
-			let out = card.holder.deck.findCard(c => c.name === "Biting Frost");
+			const out = card.holder.deck.findCard(c => c.name === "Biting Frost");
 			if (out)
 				await out.autoplay(card.holder.deck);
 		},
@@ -396,19 +396,19 @@ const ability_dict: Record<string, Ability> = {
 	francesca_hope: {
 		description: "Move agile units to whichever valid row maximizes their strength (don't move units already in optimal row).",
 		activated: async card => {
-			let close = Board.curr.getRow(card, "close", undefined);
-			let ranged =  Board.curr.getRow(card, "ranged", undefined);
-			let cards: {row: CardContainer, card: Card, weight: number;}[] = ability_dict["francesca_hope"].helper!(card);
+			const close = Board.curr.getRow(card, "close", undefined);
+			const ranged =  Board.curr.getRow(card, "ranged", undefined);
+			const cards: {row: CardContainer, card: Card, weight: number;}[] = ability_dict["francesca_hope"].helper!(card);
 			await Promise.all(cards.map(async p => await Board.curr.moveTo(p.card, p.row === close ? ranged : close, p.row) ) );
 
 		},
 		weight: card => {
-			let cards: {row: CardContainer, card: Card, weight: number;}[] = ability_dict["francesca_hope"].helper!(card);
+			const cards: {row: CardContainer, card: Card, weight: number;}[] = ability_dict["francesca_hope"].helper!(card);
 			return cards.reduce((a,c) => a + c.weight, 0);
 		},
 		helper: (card): {row: CardContainer, card: Card, weight: number;}[] => {
-			let close = Board.curr.getRow(card, "close", undefined);
-			let ranged =  Board.curr.getRow(card, "ranged", undefined);
+			const close = Board.curr.getRow(card, "close", undefined);
+			const ranged =  Board.curr.getRow(card, "ranged", undefined);
 			return validCards(close).concat( validCards(ranged) );
 			function validCards(cont: CardContainer) {
 				return cont.findCards(c => c.row === "agile").filter(c => dif(c,cont) > 0).map(c => ({card:c, row:cont, weight:dif(c,cont)}))
@@ -427,10 +427,10 @@ const ability_dict: Record<string, Ability> = {
 		weight: (card, ai, max, data) => {
 			if( Game.curr.roundCount < 2)
 				return 0;
-			let medics = card.holder.hand.findCard(c => c.abilities.includes("medic"));
+			const medics = card.holder.hand.findCard(c => c.abilities.includes("medic"));
 			if (medics !== undefined)
 				return 0;
-			let spies = card.holder.hand.findCard(c => c.abilities.includes("spy"));
+			const spies = card.holder.hand.findCard(c => c.abilities.includes("spy"));
 			if (spies !== undefined)
 				return 0;
 			if (card.holder.hand.findCard(c => c.abilities.includes("decoy")) !== undefined && (data.medic.length || data.spy.length && card.holder.deck.findCard(c => c.abilities.includes("medic")) !== undefined) )

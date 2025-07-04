@@ -17,7 +17,7 @@ export default class Board {
 		this.me_score = 0;
 		this.row = [];
 		for (let x=0; x<6; ++x) {
-			let elem = document.getElementById( (x<3)?"field-op":"field-me" )?.children[x%3] as HTMLElement;
+			const elem = document.getElementById( (x<3)?"field-op":"field-me" )?.children[x%3] as HTMLElement;
 			this.row[x] = new Row(elem);
 		}
 
@@ -55,7 +55,7 @@ export default class Board {
 
 	// Sends and translates a card from the source to the Deck of the card's combat row
 	async toRow(card: Card, source: CardContainer) {
-		let row = (card.row === "agile") ? "close" : card.row ? card.row : "close";
+		const row = (card.row === "agile") ? "close" : card.row ? card.row : "close";
 		await this.moveTo(card, row, source);
 	}
 
@@ -69,7 +69,7 @@ export default class Board {
 
 	// Sends and translates a card from the source to a row name associated with the passed player
 	async addCardToRow(card: Card, row_name: string, player: Player, source?: CardContainer) {
-		let row = this.getRow(card, row_name, player);
+		const row = this.getRow(card, row_name, player);
 		await translateTo(card, source, row);
 		await row.addCard(card);
 	}
@@ -77,8 +77,8 @@ export default class Board {
 	// Returns the CardCard associated with the row name that the card would be sent to
 	getRow(card: Card, row_name: string, player?: Player): CardContainer {
 		player = player ? player : card ? card.holder : Players.curr.player_me;
-		let isMe = player === Players.curr.player_me;
-		let isSpy = card.abilities.includes("spy");
+		const isMe = player === Players.curr.player_me;
+		const isSpy = card.abilities.includes("spy");
 		switch (row_name) {
 			case "weather": return Weather.curr; break;
 			case "close":  return this.row[ Number(isMe) ^ Number(isSpy) ? 3 : 2];
@@ -93,7 +93,7 @@ export default class Board {
 
 	// Updates which player currently is in the lead
 	updateLeader() {
-		let dif = Players.curr.player_me.total - Players.curr.player_op.total;
+		const dif = Players.curr.player_me.total - Players.curr.player_op.total;
 		Players.curr.player_me.setWinning(dif > 0);
 		Players.curr.player_op.setWinning(dif < 0);
 	}

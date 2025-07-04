@@ -1,4 +1,4 @@
-export type PremadeDeck = {
+export interface PremadeDeck {
     faction: string;
     leader: number;
     cards: [number, number][];

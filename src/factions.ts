@@ -9,11 +9,11 @@ import type Card from "./card";
 import type Player from "./player";
 import Players from "./players";
 
-type Faction = {
+interface Faction {
     name: string;
     description: string;
     factionAbility?: (player: Player) => void;
-};
+}
 
 const factions: Record<string, Faction> = {
 	realms: {
@@ -34,11 +34,11 @@ const factions: Record<string, Faction> = {
 	monsters: {
 		name: "Monsters",
 		factionAbility: player => Game.curr.roundEnd.push(async () => {
-			let units = Board.curr.row.filter( (r,i) => Number(player === Players.curr.player_me) ^ Number(i < 3))
+			const units = Board.curr.row.filter( (r,i) => Number(player === Players.curr.player_me) ^ Number(i < 3))
 				.reduce<Card[]>((a,r) => r.cards.filter(c => c.isUnit()).concat(a), []);
 			if (units.length === 0)
 				return false;
-			let card = units[randomInt(units.length)];
+			const card = units[randomInt(units.length)];
 			card.noRemove = true;
 			Game.curr.roundStart.push( async () => {
 				await UI.curr.notification("monsters", 1200);

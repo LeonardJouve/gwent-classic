@@ -7,9 +7,9 @@ import Weather from "./weather";
 // TODO: replace undefined function arguments with ?
 
 const ui = new UI();
-const board = new Board();
-const weather = new Weather();
-const game = new Game();
+new Board();
+new Weather();
+new Game();
 
 ui.enablePlayer(false);
-const dm = new DeckMaker();
+new DeckMaker();

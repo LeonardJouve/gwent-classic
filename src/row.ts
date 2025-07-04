@@ -7,13 +7,13 @@ import Board from "./board";
 import UI from "./ui";
 import Players from "./players";
 
-type Effects = {
+interface Effects {
     weather: boolean;
     bond: Record<string, number>;
     morale: number;
     horn: number;
     mardroeme: number;
-};
+}
 
 // Contains active cards and effects. Calculates the current score of each card and the row.
 export default class Row extends CardContainer {
@@ -41,12 +41,12 @@ export default class Row extends CardContainer {
 			this.special = card;
 			this.elem_special.appendChild(card.elem);
 		} else {
-			let index = this.addCardSorted(card);
+			const index = this.addCardSorted(card);
 			this.addCardElement(card, index);
 			this.resize();
 		}
 		this.updateState(card, true);
-		for (let x of card.placed)
+		for (const x of card.placed)
 			await x(card, this);
 		card.elem.classList.add("noclick");
 		await sleep(600);
@@ -65,7 +65,7 @@ export default class Row extends CardContainer {
 			card.resetPower();
 		}
 		this.updateState(card, false);
-		for (let x of card.removed)
+		for (const x of card.removed)
 			x(card);
 		this.updateScore();
 		return card;
@@ -74,14 +74,14 @@ export default class Row extends CardContainer {
 	// Override
 	removeCardElement(card: Card, index: number) {
 		super.removeCardElement(card, index);
-		let x = card.elem;
+		const x = card.elem;
 		x.style.marginLeft = x.style.marginRight = "";
 		x.classList.remove("noclick");
 	}
 
 	// Updates a card's effect on the row
 	updateState(card: Card, activate: boolean){
-		for (let x of card.abilities){
+		for (const x of card.abilities){
 			switch (x) {
 				case "morale":
 				case "horn":
@@ -117,10 +117,10 @@ export default class Row extends CardContainer {
 	// Updates the row's score by summing the current power of its cards
 	updateScore() {
 		let total = 0;
-		for (let card of this.cards) {
+		for (const card of this.cards) {
 			total += this.cardScore(card);
 		}
-		let player = this.elem_parent.parentElement?.id === "field-op" ? Players.curr.player_op : Players.curr.player_me;
+		const player = this.elem_parent.parentElement?.id === "field-op" ? Players.curr.player_op : Players.curr.player_me;
 		player.updateTotal(total - this.total);
 		this.total = total;
 		this.elem_parent.getElementsByClassName("row-score")[0].innerHTML = String(this.total);
@@ -128,7 +128,7 @@ export default class Row extends CardContainer {
 
 	// Calculates and set the card's current power
 	cardScore(card: Card){
-		let total = this.calcCardScore(card);
+		const total = this.calcCardScore(card);
 		card.setPower(total);
 		return total;
 	}
@@ -144,7 +144,7 @@ export default class Row extends CardContainer {
 			total = Math.min(1, total);
 		if (Game.curr.doubleSpyPower && card.abilities.includes("spy"))
 			total *= 2;
-		let bond = this.effects.bond[card.id()];
+		const bond = this.effects.bond[card.id()];
 		if (isNumber(bond) && bond > 1)
 			total *= Number(bond);
 		total += Math.max(0, this.effects.morale + (card.abilities.includes("morale") ? -1 : 0 ));
@@ -157,7 +157,7 @@ export default class Row extends CardContainer {
 	async leaderHorn(){
 		if (this.special !== null)
 			return;
-		let horn = new Card(card_dict[5], null);
+		const horn = new Card(card_dict[5], null);
 		await this.addCard(horn);
 		Game.curr.roundEnd.push( async () => Boolean(this.removeCard(horn)) );
 	}
@@ -182,7 +182,7 @@ export default class Row extends CardContainer {
 	maxUnits() {
 		let max: Card[] = [];
 		for (let i=0; i<this.cards.length; ++i){
-			let card = this.cards[i];
+			const card = this.cards[i];
 			if (!card.isUnit())
 				continue;
 			if (!max[0] || max[0].power < card.power)

@@ -44,8 +44,8 @@ export default class Card {
 				this.hero = true;
 				this.abilities.splice(0, 1);
 			}
-			for (let x of this.abilities) {
-				let ab = ability_dict[x];
+			for (const x of this.abilities) {
+				const ab = ability_dict[x];
 				if (ab.placed) this.placed.push(ab.placed);
 				if (ab.removed) this.removed.push(ab.removed);
 				if (ab.activated) this.activated.push(ab.activated);
@@ -82,7 +82,7 @@ export default class Card {
 	setPower(n: number){
 		if (this.name === "Decoy")
 			return;
-		let elem = this.elem.children[0].children[0] as HTMLElement;
+		const elem = this.elem.children[0].children[0] as HTMLElement;
 		if (n !== this.power) {
 			this.power = n;
 			elem.innerHTML = String(this.power);
@@ -105,7 +105,7 @@ export default class Card {
 		if (name === "scorch") {
 			return await this.scorch(name);
 		}
-		let anim = this.elem.children[3] as HTMLElement;
+		const anim = this.elem.children[3] as HTMLElement;
 		anim.style.backgroundImage = iconURL("anim_" + name);
 		await sleep(50);
 
@@ -125,7 +125,7 @@ export default class Card {
 
 	// Animates the scorch effect
 	async scorch(name: string){
-		let anim = this.elem.children[3] as HTMLElement;
+		const anim = this.elem.children[3] as HTMLElement;
 		anim.style.backgroundSize = "cover";
 		anim.style.backgroundImage = iconURL("anim_" + name);
 		await sleep(50);
@@ -152,7 +152,7 @@ export default class Card {
 
 	// Creates an HTML element based on the card's properties
 	createCardElem(card: Card){
-		let elem = document.createElement("div");
+		const elem = document.createElement("div");
 		elem.style.backgroundImage = smallURL(card.faction + "_" + card.filename);
 		elem.classList.add("card");
 		elem.addEventListener("click", () => UI.curr.selectCard(card), false);
@@ -160,7 +160,7 @@ export default class Card {
 		if (card.row === "leader")
 			return elem;
 
-		let power = document.createElement("div");
+		const power = document.createElement("div");
 		elem.appendChild(power);
 		let bg;
 		if (card.hero) {
@@ -176,17 +176,17 @@ export default class Card {
 		}
 		power.style.backgroundImage = iconURL(bg);
 
-		let row = document.createElement("div");
+		const row = document.createElement("div");
 		elem.appendChild(row);
 		if (card.row === "close" || card.row === "ranged" || card.row === "siege" || card.row === "agile") {
-			let num = document.createElement("div");
+			const num = document.createElement("div");
 			num.appendChild( document.createTextNode(String(card.basePower)) );
 			num.classList.add("center");
 			power.appendChild(num);
 			row.style.backgroundImage = iconURL("card_row_" + card.row);
 		}
 
-		let abi = document.createElement("div");
+		const abi = document.createElement("div");
 		elem.appendChild(abi);
 		if (card.faction !== "special" && card.faction !== "weather" && card.abilities.length > 0) {
 			let str =  card.abilities[card.abilities.length-1];

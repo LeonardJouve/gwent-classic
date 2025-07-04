@@ -9,30 +9,30 @@ import type Row from "./row";
 import {compareCards, randomInt} from "./utils";
 import Weather from "./weather";
 
-type RowData = {
+interface RowData {
     row: Row;
     cards: Card[];
-};
+}
 
-type MaximumData = {
+interface MaximumData {
     row: RowData;
     card: Card;
-};
+}
 
-export type Maximum = {
+export interface Maximum {
     me: MaximumData[];
     op: MaximumData[];
     rmax: RowData[];
-};
+}
 
-export type CardTypes = {
+export interface CardTypes {
     spy: Card[];
     medic: Card[];
     bond: Record<string, number>;
     scorch: Card[];
     grave_me?: CardTypes;
     grave_op?: CardTypes;
-};
+}
 
 // Makes decisions for the AI opponent player
 export default class ControllerAI {
@@ -49,17 +49,17 @@ export default class ControllerAI {
 			await player.passRound();
 			return;
 		}
-		let data_max = this.getMaximums();
-		let data_board = this.getBoardData();
-		let weights = player.hand.cards.map(c =>
+		const data_max = this.getMaximums();
+		const data_board = this.getBoardData();
+		const weights = player.hand.cards.map(c =>
 			({weight: this.weightCard(c, data_max, data_board), action: async () => await this.playCard(c, data_max, data_board)}) );
 		if (player.leaderAvailable)
 			weights.push( {weight: this.weightLeader(player.leader, data_max, data_board), action: async () => await player.activateLeader()} );
 		weights.push( {weight: this.weightPass(), action: async () => await player.passRound()} );
-		let weightTotal = weights.reduce( (a,c) => a + c.weight, 0);
+		const weightTotal = weights.reduce( (a,c) => a + c.weight, 0);
 		if (weightTotal === 0){
 			for (let i=0; i<player.hand.cards.length; ++i) {
-				let card = player.hand.cards[i];
+				const card = player.hand.cards[i];
 				if (card.row === "weather" && this.weightWeather(card) > -1 || card.abilities.includes("avenger")) {
 					await weights[i].action();
 					return;
@@ -68,7 +68,8 @@ export default class ControllerAI {
 			await player.passRound();
 		} else {
 			let rand = randomInt(weightTotal);
-			for (var i=0; i < weights.length; ++i) {
+			let i = 0;
+            for (; i < weights.length; ++i) {
 				rand -= weights[i].weight;
 				if (rand < 0)
 					break;
@@ -79,17 +80,17 @@ export default class ControllerAI {
 
 	// Collects data about card with the hightest power on the board
 	getMaximums(): Maximum {
-		let rmax = Board.curr.row.map(r =>  ({row: r, cards: r.cards.filter(c => c.isUnit()).reduce<Card[]>( (a,c) =>
+		const rmax = Board.curr.row.map(r =>  ({row: r, cards: r.cards.filter(c => c.isUnit()).reduce<Card[]>( (a,c) =>
 			(!a.length|| a[0].power < c.power) ? [c] : a[0].power === c.power ? a.concat([c]) : a
 		, []) }) );
 
 		let max = rmax.filter((r,i) => r.cards.length && i < 3).reduce((a,r) => Math.max(a, r.cards[0].power), 0);
-        let max_me = rmax.filter((r,i) => i < 3 && r.cards.length && r.cards[0].power === max).reduce<MaximumData[]>((a,r) => {
+        const max_me = rmax.filter((r,i) => i < 3 && r.cards.length && r.cards[0].power === max).reduce<MaximumData[]>((a,r) => {
             return a.concat(r.cards.map(c => ({row:r, card:c})));
         }, []);
 
 		max = rmax.filter((r,i) => r.cards.length && i > 2).reduce((a,r) => Math.max(a, r.cards[0].power), 0);
-		let max_op = rmax.filter((r,i) => i > 2 && r.cards.length && r.cards[0].power === max).reduce<MaximumData[]>((a,r) =>
+		const max_op = rmax.filter((r,i) => i > 2 && r.cards.length && r.cards[0].power === max).reduce<MaximumData[]>((a,r) =>
 			a.concat(r.cards.map(c => ({row:r, card:c})))
 		, []);
 
@@ -98,7 +99,7 @@ export default class ControllerAI {
 
 	// Collects data about the types of cards on the board and in each player's graves
 	getBoardData(){
-		let data = this.countCards(new CardContainer(), undefined);
+		const data = this.countCards(new CardContainer(), undefined);
 		Object.values([0,1,2]).map(i => Board.curr.row[i]).forEach(r => this.countCards(r, data));
 		data.grave_me = this.countCards(this.player.grave, undefined);
 		data.grave_op = this.countCards(this.player.opponent().grave, undefined);
@@ -109,7 +110,7 @@ export default class ControllerAI {
 	countCards(container: CardContainer, d?: CardTypes){
 		const data = d ? d : {spy: [], medic: [], bond: {}, scorch: []};
 		container.cards.filter(c => c.isUnit()).forEach(c => {
-			for (let x of c.abilities) {
+			for (const x of c.abilities) {
 				switch (x) {
 					case "spy":
 					case "medic":
@@ -130,7 +131,7 @@ export default class ControllerAI {
 
 	// Swaps a card from the hand with the deck if beneficial
 	redraw() {
-		let card = this.discardOrder({holder:this.player} as Card).shift();
+		const card = this.discardOrder({holder:this.player} as Card).shift();
 		if (card && card.power < 15) {
 			this.player.deck.swap(this.player.hand, this.player.hand.removeCard(card, undefined))
 		}
@@ -138,35 +139,35 @@ export default class ControllerAI {
 
 	// Orders discardable cards from most to least discardable
 	discardOrder(card: Card): Card[] {
-		let cards: Card[] = [];
-		let groups: Record<string, Card[]> = {};
-		let musters = card.holder.hand.cards.filter(c => c.abilities.includes("muster"));
+		const cards: Card[] = [];
+		const groups: Record<string, Card[]> = {};
+		const musters = card.holder.hand.cards.filter(c => c.abilities.includes("muster"));
 		while (musters.length > 0) {
-			let curr = musters.pop() as Card;
-			let i = curr.name.indexOf('-');
-			let name = i === -1 ? curr.name : curr.name.substring(0, i).trim();
+			const curr = musters.pop() as Card;
+			const i = curr.name.indexOf('-');
+			const name = i === -1 ? curr.name : curr.name.substring(0, i).trim();
 			if (!groups[name])
 				groups[name] = [];
-			let group = groups[name];
+			const group = groups[name];
 			group.push(curr);
 			for (let j=musters.length-1; j>=0; j--)
 				if (musters[j].name.startsWith(name))
 					group.push( musters.splice(j,1)[0] );
 		}
 
-		for (let group of Object.values(groups)) {
+		for (const group of Object.values(groups)) {
 			group.sort(compareCards);
 			group.pop();
 			cards.push(...group);
 		}
 
-		let weathers = card.holder.hand.cards.filter(c => c.row === "weather");
+		const weathers = card.holder.hand.cards.filter(c => c.row === "weather");
 		if (weathers.length > 1){
 			weathers.splice(randomInt(weathers.length), 1);
 			cards.push(...weathers);
 		}
 
-		let normal = card.holder.hand.cards.filter(c => c.abilities.length === 0);
+		const normal = card.holder.hand.cards.filter(c => c.abilities.length === 0);
 		normal.sort(compareCards);
 		cards.push(...normal);
 		return cards;
@@ -188,17 +189,17 @@ export default class ControllerAI {
 
 	// Plays a Commander's Horn to the most beneficial row. Assumes at least one viable row.
 	async horn(card: Card){
-		let rows = [0,1,2].map(i => Board.curr.row[i]).filter(r => r.special === null);
+		const rows = [0,1,2].map(i => Board.curr.row[i]).filter(r => r.special === null);
 		let max_row;
 		let max = 0;
 		for (let i=0; i<rows.length; ++i) {
-			let r = rows[i];
-			let dif: [number, number] = [0, 0];
+			const r = rows[i];
+			const dif: [number, number] = [0, 0];
 			this.calcRowPower(r, dif, true);
 			r.effects.horn++;
 			this.calcRowPower(r, dif, false);
 			r.effects.horn--;
-			let score = dif[1] - dif[0];
+			const score = dif[1] - dif[0];
 			if (max < score){
 				max = score;
 				max_row = r;
@@ -211,7 +212,7 @@ export default class ControllerAI {
 	async mardroeme(card: Card){ // TODO skellige
 		let row, max = 0;
 		for (let i=1; i<3; i++){
-			let curr = this.weightMardroemeRow(card, Board.curr.row[i]);
+			const curr = this.weightMardroemeRow(card, Board.curr.row[i]);
 			if (curr > max){
 				max = curr;
 				row = Board.curr.row[i];
@@ -222,18 +223,18 @@ export default class ControllerAI {
 
 	// Selects a card to remove from a Grave. Assumes at least one valid card.
 	medic(card: Card, grave: Grave){
-		let data = this.countCards(grave, undefined);
+		const data = this.countCards(grave, undefined);
 		let targ;
 		if (data.spy.length){
-			let min = data.spy.reduce( (a,c) => Math.min(a, c.power), Number.MAX_VALUE);
+			const min = data.spy.reduce( (a,c) => Math.min(a, c.power), Number.MAX_VALUE);
 			targ = data.spy.filter(c => c.power === min)[0];
 		} else if (data.medic.length) {
-			let max = data.medic.reduce( (a,c) => Math.max(a, c.power), Number.MIN_VALUE);
+			const max = data.medic.reduce( (a,c) => Math.max(a, c.power), Number.MIN_VALUE);
 			targ = data.medic.filter(c => c.power === max)[0];
 		} else if (data.scorch.length) {
 			targ = data.scorch[randomInt(data.scorch.length)];
 		} else {
-			let units = grave.findCards(c => c.isUnit());
+			const units = grave.findCards(c => c.isUnit());
 			targ = units.reduce( (a,c) => a.power < c.power ? c : a, units[0] );
 		}
 		return targ;
@@ -243,17 +244,17 @@ export default class ControllerAI {
 	async decoy(card: Card, max: Maximum, data: CardTypes) {
 		let targ, row;
 		if (data.spy.length){
-			let min = data.spy.reduce( (a,c) => Math.min(a, c.power), Number.MAX_VALUE);
+			const min = data.spy.reduce( (a,c) => Math.min(a, c.power), Number.MAX_VALUE);
 			targ = data.spy.filter(c => c.power === min)[0];
 		} else if (data.medic.length) {
 			targ = data.medic[randomInt(data.medic.length)];
 		} else if (data.scorch.length) {
 			targ = data.scorch[randomInt(data.scorch.length)];
 		} else {
-			let pairs = max.rmax.filter((r,i) => i<3 && r.cards.length).reduce<{r: Row; c: Card}[]>((a,r) =>
+			const pairs = max.rmax.filter((r,i) => i<3 && r.cards.length).reduce<{r: Row; c: Card}[]>((a,r) =>
 				r.cards.map(c => ({r:r.row, c})).concat(a)
 			, []);
-			let pair = pairs[randomInt(pairs.length)];
+			const pair = pairs[randomInt(pairs.length)];
 			targ = pair.c;
 			row = pair.r;
 		}
@@ -278,7 +279,7 @@ export default class ControllerAI {
 	weightPass(){
 		if (this.player.health === 1)
 			return 0;
-		let dif = this.player.opponent().total - this.player.total;
+		const dif = this.player.opponent().total - this.player.total;
 		if (dif > 30)
 			return 100;
 		if (dif < -30 && this.player.opponent().handsize - this.player.handsize > 2)
@@ -288,9 +289,9 @@ export default class ControllerAI {
 
 	// Assigns a weight for how likely the controller is to activate its leader ability
 	weightLeader(card: Card, max: Maximum, data: CardTypes) {
-		let w = ability_dict[card.abilities[0]].weight;
+		const w = ability_dict[card.abilities[0]].weight;
 		if (ability_dict[card.abilities[0]].weight) {
-			let score = w!(card, this, max, data);
+			const score = w!(card, this, max, data);
 			return score;
 		}
 		return 10 + (Game.curr.roundCount-1) * 15;
@@ -298,10 +299,10 @@ export default class ControllerAI {
 
 	// Assigns a weight for how likely the controller will use a scorch-row card
 	weightScorchRow(card: Card, max: Maximum, row_name: string) {
-		let index = 3 + (row_name==="close" ? 0 : row_name==="ranged" ? 1 : 2);
+		const index = 3 + (row_name==="close" ? 0 : row_name==="ranged" ? 1 : 2);
 		if (Board.curr.row[index].total < 10)
 			return 0;
-		let score = max.rmax[index].cards.reduce((a,c) => a + c.power, 0);
+		const score = max.rmax[index].cards.reduce((a,c) => a + c.power, 0);
 		return score;
 	}
 
@@ -317,7 +318,7 @@ export default class ControllerAI {
 
 	// Calculates weight for playing a card on the given row
 	weightRowChangeTrue(card: Card, row: Row) {
-		let dif: [number, number] = [0,0];
+		const dif: [number, number] = [0,0];
 		this.calcRowPower(row, dif, true);
 		row.updateState(card, true);
 		this.calcRowPower(row, dif, false);
@@ -336,9 +337,9 @@ export default class ControllerAI {
 			rows = Object.values(Weather.curr.types).filter(t => t.count === 0 && t.name === card.abilities[0]).flatMap(t => t.rows);
 		if (!rows.length)
 			return 1;
-		let dif: [number, number] = [0,0];
+		const dif: [number, number] = [0,0];
 		rows.forEach( r => {
-			let state = r.effects.weather;
+			const state = r.effects.weather;
 			this.calcRowPower(r, dif, true);
 			r.effects.weather = !state;
 			this.calcRowPower(r, dif, false);
@@ -351,19 +352,19 @@ export default class ControllerAI {
 	weightMardroemeRow(card: Card, row: Row){
 		if (card.name === "Mardroeme" && row.special !== null)
 			return 0;
-		let ermion = card.holder.hand.cards.filter(c => c.name === "Ermion").length > 0;
+		const ermion = card.holder.hand.cards.filter(c => c.name === "Ermion").length > 0;
 		if (ermion && card.name !== "Ermion" && row === Board.curr.row[1])
 			return 0;
-		let name = row === Board.curr.row[1] ? "Young Berserker" : "Berserker";
-		let n = row.cards.filter(c => c.name === name).length;
-		let weight = row === Board.curr.row[2] ? 10*n : 8*n*n - 2*n
+		const name = row === Board.curr.row[1] ? "Young Berserker" : "Berserker";
+		const n = row.cards.filter(c => c.name === name).length;
+		const weight = row === Board.curr.row[2] ? 10*n : 8*n*n - 2*n
 		return Math.max(1, weight);
 	}
 
 	// Calculates the weight for cards with the medic ability
 	weightMedic(data: CardTypes, score: number, owner: Player){
-		let units = owner.grave.findCards(c => c.isUnit());
-		let grave = data["grave_" + owner.opponent().tag as keyof CardTypes] as CardTypes;
+		const units = owner.grave.findCards(c => c.isUnit());
+		const grave = data["grave_" + owner.opponent().tag as keyof CardTypes] as CardTypes;
 		return !units.length ? Math.min(1,score) : score + (grave.spy.length ? 50 : grave.medic.length ? 15 : grave.scorch.length  ? 10 : this.player.health === 1 ? 1 : 0);
 	}
 
@@ -397,7 +398,7 @@ export default class ControllerAI {
 		if (card.name === "Decoy")
 			return data?.spy.length ? 50 : data?.medic.length ? 15 : data?.scorch.length  ? 10 : max?.me.length ? 1 : 0;
 		if (card.name === "Commander's Horn") {
-			let rows = [0,1,2].map(i => Board.curr.row[i]).filter(r => r.special === null);
+			const rows = [0,1,2].map(i => Board.curr.row[i]).filter(r => r.special === null);
 			if (!rows.length)
 				return 0;
 			const rowWeights = rows.map(r => this.weightHornRow(card, r) );
@@ -406,17 +407,17 @@ export default class ControllerAI {
 
 		if (card.abilities) {
 			if (card.abilities.includes("scorch") && max) {
-				let power_op = max.op.length ? max.op[0].card.power : 0;
-				let power_me = max.me.length ? max.me[0].card.power : 0;
-				let total_op = power_op * max.op.length;
-				let total_me = power_me * max.me.length;
+				const power_op = max.op.length ? max.op[0].card.power : 0;
+				const power_me = max.me.length ? max.me[0].card.power : 0;
+				const total_op = power_op * max.op.length;
+				const total_me = power_me * max.me.length;
 				return power_me > power_op ? 0 : power_me < power_op ? total_op : Math.max(0, total_op - total_me);
 			}
 			if (card.abilities.includes("decoy")) {
 				return data?.spy.length ? 50 : data?.medic.length ? 15 : data?.scorch.length  ? 10 : max?.me.length ? 1 : 0;
 			}
 			if (card.abilities.includes("mardroeme")) {
-				let rows = [1,2].map(i => Board.curr.row[i]);
+				const rows = [1,2].map(i => Board.curr.row[i]);
 				return Math.max(...rows.map(r => this.weightMardroemeRow(card, r)) );
 			}
 		}
@@ -425,7 +426,7 @@ export default class ControllerAI {
 			return Math.max(0, this.weightWeather(card));
 		}
 
-		let row = Board.curr.getRow(card, card.row === "agile" ? "close" : card.row, this.player) as Row;
+		const row = Board.curr.getRow(card, card.row === "agile" ? "close" : card.row, this.player) as Row;
 		let score = row.calcCardScore(card);
 		switch(card.abilities[card.abilities.length -1]) {
 			case "bond":
@@ -455,7 +456,7 @@ export default class ControllerAI {
 	// Calculates the current power of a row associated with each Player
 	calcRowPower(r: Row, dif: [number, number], add: boolean){
 		r.findCards(c => c.isUnit()).forEach(c => {
-			let p = r.calcCardScore(c);
+			const p = r.calcCardScore(c);
 			c.holder === this.player ? (dif[0]+= add ? p : -p) : (dif[1]+= add ? p : -p);
 		});
 	}

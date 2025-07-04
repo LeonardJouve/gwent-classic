@@ -24,14 +24,14 @@ export default class CardContainer {
 
 	// Returns a list of up to n cards that satisfy the predicate. Does not modify container.
 	findCardsRandom(predicate: (card: Card) => boolean, n?: number){
-		let valid = predicate ? this.cards.filter(predicate) : this.cards;
+		const valid = predicate ? this.cards.filter(predicate) : this.cards;
 		if (valid.length === 0)
 			return [];
 		if (!n || n === 1)
 			return [valid[randomInt(valid.length)]];
-		let out: Card[] = [];
+		const out: Card[] = [];
 		for (let i=Math.min(n, valid.length); i>0 ; --i){
-			let index = randomInt(valid.length);
+			const index = randomInt(valid.length);
 			out.push(valid.splice(index,1)[0]);
 		}
 		return out;
@@ -73,14 +73,15 @@ export default class CardContainer {
 
 	// Adds a card to a pre-sorted CardContainer
 	addCardSorted(card: Card){
-		let i = this.getSortedIndex(card);
+		const i = this.getSortedIndex(card);
 		this.cards.splice(i, 0, card);
 		return i;
 	}
 
 	// Returns the expected index of a card in a sorted CardContainer
 	getSortedIndex(card: Card){
-		for (var i=0; i<this.cards.length; ++i)
+        let i = 0;
+		for (; i<this.cards.length; ++i)
 			if (compareCards(card, this.cards[i]) < 0)
 				break;
 		return i;
@@ -89,9 +90,9 @@ export default class CardContainer {
 	// Adds a card to a random index of the CardContainer
 	addCardRandom(card: Card){
 		this.cards.push(card);
-		let index = randomInt(this.cards.length);
+		const index = randomInt(this.cards.length);
 		if (index !== this.cards.length-1) {
-			let t = this.cards[this.cards.length-1];
+			const t = this.cards[this.cards.length-1];
 			this.cards[this.cards.length-1] = this.cards[index];
 			this.cards[index] = t;
 		}
@@ -120,10 +121,10 @@ export default class CardContainer {
 	// Modifies the margin of card elements inside a row-like container to stack properly
 	resizeCardContainer(overlap_count: number, gap: number, coef: number) {
 		if (!this.elem) return;
-        let n = this.elem.children.length;
-		let param = (n < overlap_count) ?  "" + gap+"vw" : defineCardRowMargin(n, coef);
-		let children = this.elem.getElementsByClassName("card") as HTMLCollectionOf<HTMLElement>;
-		for (let x of children)
+        const n = this.elem.children.length;
+		const param = (n < overlap_count) ?  "" + gap+"vw" : defineCardRowMargin(n, coef);
+		const children = this.elem.getElementsByClassName("card") as HTMLCollectionOf<HTMLElement>;
+		for (const x of children)
 			x.style.marginLeft = x.style.marginRight = param;
 
 		function defineCardRowMargin(n: number, coef = 0){
@@ -139,7 +140,7 @@ export default class CardContainer {
 	// Disallows teh row to be clicked
 	clearSelectable() {
 		this.elem?.classList.remove("row-selectable");
-		for (let card of this.cards)
+		for (const card of this.cards)
 			card.elem.classList.add("noclick");
 	}
 

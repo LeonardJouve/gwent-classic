@@ -12,7 +12,7 @@ export default class Hand extends CardContainer {
 
 	// Override
 	addCard(card: Card) {
-		let i = this.addCardSorted(card);
+		const i = this.addCardSorted(card);
 		this.addCardElement(card, i);
 		this.resize();
 	}

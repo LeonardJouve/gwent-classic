@@ -15,14 +15,14 @@ import Game from "./game";
 import type Row from "./row";
 import {type CardData} from "./cards";
 
-export type DeckData = {
+export interface DeckData {
     faction: string;
     leader: CardData;
     cards: {
         index: number;
         count:number;
     }[];
-};
+}
 
 export default class Player {
     private id: number;
@@ -74,7 +74,7 @@ export default class Player {
         if (deckNameContainer) deckNameContainer.innerHTML = factions[deck.faction].name;
 
         document.getElementById("stats-" + this.tag)?.getElementsByClassName("profile-img")[0].children[0].children[0];
-		let x = document.querySelector("#stats-" +this.tag+ " .profile-img > div > div");
+		const x = document.querySelector("#stats-" +this.tag+ " .profile-img > div > div");
 		if (x && x instanceof HTMLElement) x.style.backgroundImage = iconURL("deck_shield_" + deck.faction);
 	}
 
@@ -223,7 +223,7 @@ export default class Player {
 	// Disable access to leader ability and toggles leader visuals to off state
 	disableLeader(){
 		this.leaderAvailable = false;
-		let elem = this.elem_leader.cloneNode(true) as HTMLElement;
+		const elem = this.elem_leader.cloneNode(true) as HTMLElement;
 		this.elem_leader.parentNode?.replaceChild(elem, this.elem_leader);
 		this.elem_leader = elem;
 		this.elem_leader.children[0].classList.add("fade");
@@ -234,7 +234,7 @@ export default class Player {
 	// Enable access to leader ability and toggles leader visuals to on state
 	enableLeader() {
 		this.leaderAvailable = this.leader.activated.length > 0;
-		let elem = this.elem_leader.cloneNode(true) as HTMLElement;
+		const elem = this.elem_leader.cloneNode(true) as HTMLElement;
 		this.elem_leader.parentNode?.replaceChild(elem, this.elem_leader);
 		this.elem_leader = elem;
 		this.elem_leader.children[0].classList.remove("fade");

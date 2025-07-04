@@ -8,10 +8,10 @@ import type Hand from "./hand";
 import type HandAI from "./hand_ai";
 import Players from "./players";
 
-export type CardId = {
+export interface CardId {
     count: number;
     index: number;
-};
+}
 
 // Contains a randomized set of cards to be drawn from
 export default class Deck extends CardContainer {
@@ -41,7 +41,7 @@ export default class Deck extends CardContainer {
 	// Populates a this deck with a list of card data and associated those cards with the owner of this deck.
 	initialize(card_data_list: CardData[], player: Player){
 		for (let i=0; i<card_data_list.length; ++i) {
-			let card = new Card(card_data_list[i], player);
+			const card = new Card(card_data_list[i], player);
 			card.holder = player;
 			this.addCardRandom(card);
 			this.addCardElement();
@@ -72,7 +72,7 @@ export default class Deck extends CardContainer {
 
 	// Override
 	addCardElement() {
-		let elem = document.createElement("div");
+		const elem = document.createElement("div");
 		elem.classList.add("deck-card");
 		elem.style.backgroundImage = iconURL("deck_back_" + this.faction, "jpg");
 		this.setCardOffset(elem, this.cards.length-1);

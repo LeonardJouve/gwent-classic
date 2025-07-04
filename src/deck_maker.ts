@@ -10,10 +10,10 @@ import Game from "./game";
 import {type CardId} from "./deck";
 import Players from "./players";
 
-type Leader = {
+interface Leader {
     index: number;
     card: CardData;
-};
+}
 
 type CardPile = {
     count: number;
@@ -68,7 +68,7 @@ export default class DeckMaker {
 		this.setFaction(this.faction, true);
 
 		const cards = premade_deck[0].cards.map(c => ({index: c[0], count: c[1]}) );
-		let start_deck = {
+		const start_deck = {
             ...premade_deck[0],
             cards,
         };
@@ -124,23 +124,23 @@ export default class DeckMaker {
 	// If a deck is provided, will not add cards to bank that are already in the deck.
 	makeBank(faction: string, deck?: CardId[]) {
 		this.clear();
-		let cards = card_dict.map((c,i) => ({card:c, index:i})).filter(
+		const cards = card_dict.map((c,i) => ({card:c, index:i})).filter(
 		p => [faction, "neutral", "weather", "special"].includes(p.card.deck) && p.card.row !== "leader");
 
 		cards.sort( function(id1, id2) {
-			let a = card_dict[id1.index], b = card_dict[id2.index];
-			let c1 = {name: a.name, basePower: -a.strength, faction: a.deck} as Card;
-			let c2 = {name: b.name, basePower: -b.strength, faction: b.deck} as Card;
+			const a = card_dict[id1.index], b = card_dict[id2.index];
+			const c1 = {name: a.name, basePower: -a.strength, faction: a.deck} as Card;
+			const c2 = {name: b.name, basePower: -b.strength, faction: b.deck} as Card;
 			return compareCards(c1, c2);
 		});
 
 
-		let deckMap: Record<number, number> = {};
+		const deckMap: Record<number, number> = {};
 		if (deck){
-			for (let i of Object.keys(deck)) deckMap[deck[Number(i)].index] = deck[Number(i)].count;
+			for (const i of Object.keys(deck)) deckMap[deck[Number(i)].index] = deck[Number(i)].count;
 		}
 		cards.forEach( p => {
-			let count = deckMap[p.index] !== undefined ? Number(deckMap[p.index]) : 0;
+			const count = deckMap[p.index] !== undefined ? Number(deckMap[p.index]) : 0;
 			this.makePreview(p.index, Number.parseInt(p.card.count) - count, this.bank_elem, this.bank,);
 			this.makePreview(p.index, count, this.deck_elem, this.deck);
 		});
@@ -148,20 +148,20 @@ export default class DeckMaker {
 
 	// Creates HTML elements for the card previews
 	makePreview(index: number, num: number, container_elem: HTMLElement, cards: CardPile){
-		let card_data = card_dict[index];
+		const card_data = card_dict[index];
 
-		let elem = document.createElement("div");
+		const elem = document.createElement("div");
 		elem.style.backgroundImage = largeURL(card_data.deck + "_" + card_data.filename);
 		elem.classList.add("card-lg");
-		let count = document.createElement("div");
+		const count = document.createElement("div");
 		elem.appendChild(count);
 		container_elem.appendChild(elem);
 
-		let bankID = {index: index, count: num, elem: elem};
-		let isBank = cards === this.bank;
+		const bankID = {index: index, count: num, elem: elem};
+		const isBank = cards === this.bank;
 		count.innerHTML = String(bankID.count);
 		cards.push(bankID);
-		let cardIndex = cards.length-1;
+		const cardIndex = cards.length-1;
 		elem.addEventListener("click", () => this.select(cardIndex, isBank), false);
 
 		return bankID;
@@ -169,15 +169,15 @@ export default class DeckMaker {
 
 	// Updates the card preview elements when any changes are made to the deck
 	update(){
-		for (let x of this.bank) {
+		for (const x of this.bank) {
 			if (x.count)
 				x.elem.classList.remove("hide");
 			else
 				x.elem.classList.add("hide");
 		}
 		let total = 0, units = 0, special = 0, strength = 0, hero = 0;
-		for (let x of this.deck) {
-			let card_data = card_dict[x.index];
+		for (const x of this.deck) {
+			const card_data = card_dict[x.index];
 			if (x.count)
 				x.elem.classList.remove("hide");
 			else
@@ -198,7 +198,7 @@ export default class DeckMaker {
 
 	// Updates and displays the statistics describing the cards currently in the deck
 	updateStats(){
-		let stats = document.getElementById("deck-stats") as HTMLElement;
+		const stats = document.getElementById("deck-stats") as HTMLElement;
 		stats.children[1].innerHTML = String(this.stats.total);
 		stats.children[3].innerHTML = this.stats.units +(this.stats.units < 22 ? "/22" : "");
 		stats.children[5].innerHTML = this.stats.special + "/10";
@@ -213,16 +213,16 @@ export default class DeckMaker {
 
 	// Opens a Carousel to allow the client to select a leader for their deck
 	selectLeader(){
-		let container = new CardContainer(undefined);
+		const container = new CardContainer(undefined);
 		container.cards = this.leaders.map(c => {
-			let card = new Card(c.card, Players.curr.player_me);
+			const card = new Card(c.card, Players.curr.player_me);
 			card.data = c;
 			return card;
 		});
 
-		let index = this.leaders.indexOf(this.leader);
+		const index = this.leaders.indexOf(this.leader);
 		UI.curr.queueCarousel(container, 1, async (c,i) => {
-			let data = c.cards[i].data;
+			const data = c.cards[i].data;
 			this.leader = data;
 			const leaderContainer = this.leader_elem.children[1] as HTMLElement;
             leaderContainer.style.backgroundImage = largeURL(data.card.deck + "_" + data.card.filename);
@@ -239,13 +239,13 @@ export default class DeckMaker {
         const cards = Object.keys(factions).map( f => {
             return {abilities: [f], filename: f, desc_name: factions[f].name, desc: factions[f].description, faction: "faction"};
 		});
-        let container = {
+        const container = {
             ...new CardContainer(undefined),
             cards,
         } as unknown as CardContainer;
-		let index = container.cards.reduce((a,c,i) => c.filename === this.faction ? i : a, 0);
+		const index = container.cards.reduce((a,c,i) => c.filename === this.faction ? i : a, 0);
 		UI.curr.queueCarousel(container, 1, async (c,i) => {
-			let change = this.setFaction(c.cards[i].filename, undefined);
+			const change = this.setFaction(c.cards[i].filename, undefined);
 			if (!change)
 				return;
 			this.makeBank(c.cards[i].filename, undefined);
@@ -272,13 +272,13 @@ export default class DeckMaker {
 
 	// Adds a card to container (Bank or deck)
 	add(index: number, cards: CardPile) {
-		let id = cards[index];
+		const id = cards[index];
 		id.elem.children[0].innerHTML = String(++id.count);
 	}
 
 	// Removes a card from container (bank or deck)
 	remove(index: number, cards: CardPile) {
-		let id = cards[index];
+		const id = cards[index];
 		id.elem.children[0].innerHTML = String(--id.count);
 	}
 
@@ -328,7 +328,7 @@ export default class DeckMaker {
 
 	// Converts the current deck to a JSON string
 	deckToJSON(){
-		let obj = {
+		const obj = {
 			faction: this.faction,
 			leader: this.leader.index,
 			cards: this.deck.filter(x => x.count > 0).map(x => [x.index, x.count] )
@@ -338,9 +338,9 @@ export default class DeckMaker {
 
 	// Called by the client to downlaod the current deck as a JSON file
 	downloadDeck(){
-		let json = this.deckToJSON();
-		let str = "data:text/json;charset=utf-8," + encodeURIComponent(json);
-		let hidden_elem = document.getElementById('download-json') as HTMLAnchorElement;
+		const json = this.deckToJSON();
+		const str = "data:text/json;charset=utf-8," + encodeURIComponent(json);
+		const hidden_elem = document.getElementById('download-json') as HTMLAnchorElement;
 		hidden_elem.href = str;
 		hidden_elem.download = "GwentDeck.json";
 		hidden_elem.click();
@@ -349,10 +349,10 @@ export default class DeckMaker {
 	// Called by the client to upload a JSON file representing a new deck
 	uploadDeck() {
 		const uploadElement = document.getElementById("add-file") as HTMLInputElement;
-		let files = uploadElement.files;
+		const files = uploadElement.files;
 		if (!files || files.length <= 0)
 			return false;
-		let fr = new FileReader();
+		const fr = new FileReader();
 		fr.onload = e => {
 			try {
 				this.deckFromJSON(e.target?.result as string);
@@ -381,8 +381,8 @@ export default class DeckMaker {
 		if (deck.faction != card_dict[deck.leader].deck)
 			warning += "Leader '" + card_dict[deck.leader].name + "' doesn't match deck faction '" + deck.faction + "'.\n";
 
-		let cards = deck.cards.filter( c => {
-			let card = card_dict[c[0]];
+		const cards = deck.cards.filter( c => {
+			const card = card_dict[c[0]];
 			if (!card) {
 				warning += "ID " + c[0] + " does not correspond to a card.\n";
 				return false
@@ -399,7 +399,7 @@ export default class DeckMaker {
 		})
 		.map(c => ({index:c[0], count:Math.min(c[1], Number(card_dict[c[0]].count))}) );
 
-		if (warning && !confirm(warning + "\n\n\Continue importing deck?"))
+		if (warning && !confirm(warning + "\n\nContinue importing deck?"))
 			return;
 		this.setFaction(deck.faction, true);
 		if (card_dict[deck.leader].row === "leader" && deck.faction === card_dict[deck.leader].deck){

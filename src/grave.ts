@@ -18,7 +18,7 @@ export default class Grave extends CardContainer {
 
 	// Override
 	removeCard(card: Card|number){
-		let n = isNumber(card) ? card as number : this.cards.indexOf(card as Card);
+		const n = isNumber(card) ? card as number : this.cards.indexOf(card as Card);
 		return super.removeCard(card, n);
 	}
 

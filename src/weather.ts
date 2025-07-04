@@ -5,11 +5,11 @@ import Row from "./row";
 import UI from "./ui";
 import {sleep} from "./utils";
 
-type WeatherType = {
+interface WeatherType {
     name: string;
     count: number;
     rows: Row[];
-};
+}
 
 // Handles how weather effects are added and removed
 export default class Weather extends CardContainer {
@@ -24,7 +24,7 @@ export default class Weather extends CardContainer {
 			frost: {name:"frost", count: 0, rows: []}
 		}
 		let i=0;
-		for (let key of Object.keys(this.types))
+		for (const key of Object.keys(this.types))
 			this.types[key].rows = [Board.curr.row[i], Board.curr.row[5-i++]];
 
 		this.elem?.addEventListener("click",() => UI.curr.selectRow(this), false);
@@ -67,9 +67,9 @@ export default class Weather extends CardContainer {
 	// Checks if a card's abilities are a weather type. If the predicate is met, perfom the action
 	// on the type's associated rows
 	changeWeather(card: Card, predicate: (ability: string) => boolean, action: (row: Row, weatherType: WeatherType) => void) {
-		for (let x of card.abilities) {
+		for (const x of card.abilities) {
 			if (x in this.types && predicate(x)){
-				for (let r of this.types[x].rows)
+				for (const r of this.types[x].rows)
 					action(r, this.types[x]);
 			}
 		}

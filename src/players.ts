@@ -2,7 +2,7 @@ import {type CardData } from "./cards";
 import {type CardId } from "./deck";
 import Player from "./player";
 
-type PlayerData = {
+interface PlayerData {
     faction: string;
     leader: CardData;
     cards: CardId[];

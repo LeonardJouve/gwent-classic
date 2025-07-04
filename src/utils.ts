@@ -12,11 +12,11 @@ import type CardContainer from "./card_container";
 // Translates an element by x from the left and y from the top
 export async function translate(elem: HTMLElement, x: number, y: number) {
     const dimensionsElement = document.getElementById("dimensions") as HTMLElement;
-	let vw100 = 100 / dimensionsElement.offsetWidth;
+	const vw100 = 100 / dimensionsElement.offsetWidth;
 	x*=vw100;
 	y*=vw100 ;
 	elem.style.transform = "translate(" + x + "vw, " + y + "vw)";
-	let margin = elem.style.marginLeft;
+	const margin = elem.style.marginLeft;
 	elem.style.marginRight = -elem.offsetWidth*vw100 + "vw";
 	elem.style.marginLeft = "";
 	await sleep(499);
@@ -45,7 +45,7 @@ export async function fade(fadeIn: boolean, elem: HTMLElement, dur: number, dela
 	elem.style.filter = "alpha(opacity=" + (op * 100) + ")";
 	if (fadeIn)
 		elem.classList.remove("hide");
-	let timer = setInterval( async function() {
+	const timer = setInterval( async function() {
 		op += op * (fadeIn ? 0.1 : -0.1);
 		if (op >= 1) {
 			clearInterval(timer);
@@ -103,7 +103,7 @@ export function sleep(ms: number) {
 // Suspends execution until the predicate condition is met, checking every ms milliseconds
 export function sleepUntil(predicate: () => boolean, ms?: number): Promise<void> {
 	return new Promise(resolve => {
-		let timer = setInterval( function () {
+		const timer = setInterval( function () {
 			if (predicate()) {
 				clearInterval(timer);
 				resolve();
@@ -114,7 +114,7 @@ export function sleepUntil(predicate: () => boolean, ms?: number): Promise<void>
 
 // Compares by type then power then name
 export function compareCards(a: Card, b: Card){
-    var dif = factionRank(a) - factionRank(b);
+    let dif = factionRank(a) - factionRank(b);
     if (dif !== 0)
         return dif;
     dif = a.basePower - b.basePower;

@@ -40,7 +40,6 @@ export default class UI {
         passButton.addEventListener("click", () => Players.curr.player_me.passRound(), false);
 		const cancelElement = document.getElementById("click-background") as HTMLElement;
         cancelElement.addEventListener("click", () => UI.curr.cancel(), false);
-		this.youtube;
 		this.ytActive = false;
 		this.toggleMusic_elem = document.getElementById("toggle-music") as HTMLElement;
 		this.toggleMusic_elem.classList.add("fade");
@@ -55,7 +54,7 @@ export default class UI {
 
 	// Enables or disables client interration
 	enablePlayer(enable: boolean){
-		let main = document.getElementsByTagName("main")[0].classList;
+		const main = document.getElementsByTagName("main")[0].classList;
 		if (enable) main.remove("noclick"); else main.add("noclick");
 	}
 
@@ -114,8 +113,8 @@ export default class UI {
 
 	// Called when the player selects a selectable card
 	async selectCard(card: Card) {
-		let row = this.lastRow;
-		let pCard = this.previewCard;
+		const row = this.lastRow;
+		const pCard = this.previewCard;
 		if (card === pCard)
 			return;
 		if (pCard === null || card.holder.hand.cards.includes(card)) {
@@ -139,8 +138,8 @@ export default class UI {
 		}
 		if (this.previewCard.name === "Decoy")
 			return;
-		let card = this.previewCard;
-		let holder = card.holder;
+		const card = this.previewCard;
+		const holder = card.holder;
 		this.hidePreview();
 		this.enablePlayer(false);
 		if (card.name === "Scorch"){
@@ -173,7 +172,7 @@ export default class UI {
 		this.preview.classList.remove("hide");
 		const cardElement = this.preview.getElementsByClassName("card-lg")[0] as HTMLElement;
         cardElement.style.backgroundImage = largeURL(card.faction+"_"+card.filename);
-		let desc_elem = this.preview.getElementsByClassName("card-description")[0] as HTMLElement;
+		const desc_elem = this.preview.getElementsByClassName("card-description")[0] as HTMLElement;
 		this.setDescription(card, desc_elem);
 	}
 
@@ -233,7 +232,7 @@ export default class UI {
 	async viewCard(card: Card|null, action?: (container: CardContainer, i: number) => Promise<void>) {
 		if (card === null)
 			return;
-		let container = new CardContainer(undefined);
+		const container = new CardContainer(undefined);
 		container.cards.push(card);
 		await this.viewCardsInContainer(container, action);
 	}
@@ -251,12 +250,12 @@ export default class UI {
 		if (Game.curr.currPlayer === Players.curr.player_op) {
 			if (Players.curr.player_op.controller instanceof ControllerAI)
 				for (let i=0; i<count; ++i){
-					let cards = container.cards.reduce<number[]>((a,c,i) => !predicate || predicate(c) ? a.concat([i]) : a, []);
+					const cards = container.cards.reduce<number[]>((a,c,i) => !predicate || predicate(c) ? a.concat([i]) : a, []);
 					await action(container, cards[randomInt(cards.length)]);
 				}
 			return;
 		}
-		let carousel = new Carousel(container, count, action, predicate, bSort, bQuit, title);
+		const carousel = new Carousel(container, count, action, predicate, bSort, bQuit, title);
 		if (Carousel.curr === undefined || Carousel.curr === null)
 			carousel.start();
 		else {
@@ -275,21 +274,21 @@ export default class UI {
 
 	// Displays a custom confirmation menu
 	async popup(yesName: string, yes: (() => void)|null, noName: string, no: (() => void)|null, title: string, description: string) {
-		let p = new Popup(yesName, yes, noName, no, title, description);
+		const p = new Popup(yesName, yes, noName, no, title, description);
 		await sleepUntil( () => !Popup.curr)
 	}
 
 	// Enables or disables selection and highlighting of rows specific to the card
 	setSelectable(card: Card|null, enable: boolean){
 		if(!enable || card === null) {
-			for (let row of Board.curr.row){
+			for (const row of Board.curr.row){
                 row.elem?.classList.remove("row-selectable");
                 row.elem?.classList.remove("noclick");
                 row.elem_special.classList.remove("row-selectable");
                 row.elem_special.classList.remove("noclick");
                 row.elem?.classList.add("card-selectable");
 
-				for (let card of row.cards) {
+				for (const card of row.cards) {
 					card.elem.classList.add("noclick");
 				}
 			}
@@ -298,7 +297,7 @@ export default class UI {
 			return;
 		}
 		if (card.faction === "weather") {
-			for (let row of Board.curr.row){
+			for (const row of Board.curr.row){
 				row.elem?.classList.add("noclick");
 				row.elem_special.classList.add("noclick");
 			}
@@ -309,7 +308,7 @@ export default class UI {
 		Weather.curr.elem?.classList.add("noclick");
 
 		if (card.name === "Scorch") {
-			for (let r of Board.curr.row){
+			for (const r of Board.curr.row){
 				r.elem?.classList.add("row-selectable");
 				r.elem_special.classList.add("row-selectable");
 			}
@@ -317,7 +316,7 @@ export default class UI {
 		}
 		if (card.isSpecial()){
 			for (let i=0; i<6; i++){
-				let r = Board.curr.row[i];
+				const r = Board.curr.row[i];
 				if (i < 3 || r.special !== null){
 					r.elem?.classList.add("noclick");
 					r.elem_special.classList.add("noclick");
@@ -332,8 +331,8 @@ export default class UI {
 
 		if (card.name === "Decoy"){
 			for (let i=0; i<6; ++i) {
-				let r = Board.curr.row[i];
-				let units = r.cards.filter(c => c.isUnit());
+				const r = Board.curr.row[i];
+				const units = r.cards.filter(c => c.isUnit());
 				if (i < 3 || units.length === 0) {
 					r.elem?.classList.add("noclick");
 					r.elem_special.classList.add("noclick");
@@ -346,9 +345,9 @@ export default class UI {
 			return;
 		}
 
-		let currRows = card.row === "agile" ? [Board.curr.getRow(card, "close", card.holder), Board.curr.getRow(card, "ranged", card.holder)] : [Board.curr.getRow(card, card.row, card.holder)];
+		const currRows = card.row === "agile" ? [Board.curr.getRow(card, "close", card.holder), Board.curr.getRow(card, "ranged", card.holder)] : [Board.curr.getRow(card, card.row, card.holder)];
 		for (let i=0; i<6; i++){
-			let row = Board.curr.row[i];
+			const row = Board.curr.row[i];
 			if (currRows.includes(row)) {
 				row.elem?.classList.add("row-selectable");
 			} else {

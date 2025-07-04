@@ -7,11 +7,11 @@ import UI from "./ui";
 import {fadeIn} from "./utils";
 import Weather from "./weather";
 
-type RoundResult = {
+interface RoundResult {
     winner: Player|null;
     score_me: number;
     score_op: number;
-};
+}
 
 type Effect = () => Promise<boolean>;
 
@@ -45,7 +45,7 @@ export default class Game {
 		this.doubleSpyPower = false;
 
         this.endScreen = document.getElementById("end-screen") as HTMLElement;
-        let buttons = this.endScreen.getElementsByTagName("button");
+        const buttons = this.endScreen.getElementsByTagName("button");
 		this.customize_elem = buttons[0];
 		this.replay_elem = buttons[1];
 		this.customize_elem.addEventListener("click", () => this.returnToCustomization(), false);
@@ -80,8 +80,8 @@ export default class Game {
 
 	// Sets up player faction abilities and psasive leader abilities
 	initPlayers(p1: Player, p2: Player){
-		let l1 = ability_dict[p1.leader.abilities[0]];
-		let l2 = ability_dict[p2.leader.abilities[0]];
+		const l1 = ability_dict[p1.leader.abilities[0]];
+		const l2 = ability_dict[p2.leader.abilities[0]];
 		if (l1 === ability_dict["emhyr_whiteflame"] || l2 === ability_dict["emhyr_whiteflame"]){
 			p1.disableLeader();
 			p2.disableLeader();
@@ -196,11 +196,11 @@ export default class Game {
 	async endRound() {
 		let dif = Players.curr.player_me.total - Players.curr.player_op.total;
 		if (dif === 0) {
-			let nilf_me = Players.curr.player_me.deck.faction === "nilfgaard", nilf_op = Players.curr.player_op.deck.faction === "nilfgaard";
+			const nilf_me = Players.curr.player_me.deck.faction === "nilfgaard", nilf_op = Players.curr.player_op.deck.faction === "nilfgaard";
 			dif = Number(nilf_me) ^ Number(nilf_op) ? nilf_me ? 1 : -1 : 0;
 		}
-		let winner = dif > 0 ? Players.curr.player_me : dif < 0 ? Players.curr.player_op : null;
-		let verdict = {winner: winner, score_me: Players.curr.player_me.total, score_op: Players.curr.player_op.total}
+		const winner = dif > 0 ? Players.curr.player_me : dif < 0 ? Players.curr.player_op : null;
+		const verdict = {winner: winner, score_me: Players.curr.player_me.total, score_op: Players.curr.player_op.total}
 		this.roundHistory.push(verdict);
 
 		await this.runEffects(this.roundEnd);
@@ -226,12 +226,12 @@ export default class Game {
 
 	// Sets up and displays the end-game screen
 	async endGame() {
-		let rows = this.endScreen.getElementsByTagName("tr");
+		const rows = this.endScreen.getElementsByTagName("tr");
 		rows[1].children[0].innerHTML = Players.curr.player_me.name;
 		rows[2].children[0].innerHTML = Players.curr.player_op.name;
 
 		for (let i=1; i<4; ++i) {
-			let round = this.roundHistory[i-1];
+			const round = this.roundHistory[i-1];
 			const meScoreContainer = rows[1].children[i] as HTMLElement;
             meScoreContainer.innerHTML = round ? String(round.score_me) : "0";
             meScoreContainer.style.color = round && round.winner === Players.curr.player_me ? "goldenrod" : "";
@@ -277,7 +277,7 @@ export default class Game {
 	// Executes effects in list. If effect returns true, effect is removed.
 	async runEffects(effects: Effect[]){
 		for (let i=effects.length-1; i>=0; --i){
-			let effect = effects[i];
+			const effect = effects[i];
 			if (await effect())
 				effects.splice(i,1)
 		}
