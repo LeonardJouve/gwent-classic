@@ -75,7 +75,7 @@ export default class MatchmakingHandler {
                         matchId,
                     },
                     opponent: {
-                        ...items[i + 1 % items.length],
+                        ...items[(i + 1) % items.length],
                         matchId,
                     },
                 });

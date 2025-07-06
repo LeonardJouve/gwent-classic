@@ -3,6 +3,7 @@ import {type CardId } from "./deck";
 import Player from "./player";
 
 interface PlayerData {
+    username: string;
     faction: string;
     leader: CardData;
     cards: CardId[];
@@ -25,7 +26,7 @@ export default class Players {
 
     static setPlayers(me: PlayerData, op: PlayerData) {
         if (!Players.curr) new Players();
-        Players.curr.player_me = new Player(0, "Player 1", me);
-        Players.curr.player_op = new Player(1, "Player 2", op);
+        Players.curr.player_me = new Player(0, me.username, me);
+        Players.curr.player_op = new Player(1, op.username, op);
     }
 }

@@ -52,22 +52,22 @@ const factions: Record<string, Faction> = {
 	scoiatael: {
 		name: "Scoia'tael",
 		factionAbility: player => Game.curr.gameStart.push( async () => {
-			let notif = "";
-			if (player === Players.curr.player_me) {
-				await UI.curr.popup("Go First", () => Game.curr.firstPlayer = player, "Let Opponent Start", () => Game.curr.firstPlayer = player.opponent(), "Would you like to go first?", "The Scoia'tael faction perk allows you to decide who will get to go first.");
-				notif = Game.curr.firstPlayer?.tag + "-first";
-			} else if (player.hand instanceof HandAI) {
-				if (Math.random() < 0.5) {
-					Game.curr.firstPlayer = player;
-					notif = "scoiatael";
-				} else {
-					Game.curr.firstPlayer = player.opponent();
-					notif = Game.curr.firstPlayer?.tag + "-first";
-				}
-			} else {
-				//sleepUntil(game.firstPlayer); //TODO online
-			}
-			await UI.curr.notification(notif,1200);
+			// const notif = Game.curr.firstPlayer?.tag + "-first";
+			// if (player === Players.curr.player_me) {
+			// 	await UI.curr.popup("Go First", () => Game.curr.firstPlayer = player, "Let Opponent Start", () => Game.curr.firstPlayer = player.opponent(), "Would you like to go first?", "The Scoia'tael faction perk allows you to decide who will get to go first.");
+			// 	notif = Game.curr.firstPlayer?.tag + "-first";
+			// } else if (player.hand instanceof HandAI) {
+			// 	if (Math.random() < 0.5) {
+			// 		Game.curr.firstPlayer = player;
+			// 		notif = "scoiatael";
+			// 	} else {
+			// 		Game.curr.firstPlayer = player.opponent();
+			// 		notif = Game.curr.firstPlayer?.tag + "-first";
+			// 	}
+			// } else {
+			// 	//sleepUntil(game.firstPlayer); //TODO online
+			// }
+			// await UI.curr.notification(notif,1200);
 			return true;
 		}),
 		description: "Decides who takes first turn."

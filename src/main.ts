@@ -5,6 +5,8 @@ import UI from "./ui";
 import Weather from "./weather";
 
 // TODO: replace undefined function arguments with ?
+// TODO: fix faction change
+// TODO: handle play decoy
 
 // Matchmake
 // Waiting

@@ -1172,11 +1172,23 @@ main { background-image: url('assets/img/boardtest8.png'); }
 #start-game {
 	position: absolute;
 	top: 86%;
-	left: 46.65%;
+	left: 52.65%;
 	width: 6%;
 	height: 3%;
 	font-size: 0.98vw;
 	white-space: nowrap;
+	color: white;
+	background-color: rgb(20,20,20);
+	border: 0.1vw ridge rgb(30,30,30);
+}
+
+#username {
+	position: absolute;
+	top: 86%;
+	left: 42.65%;
+	width: 9%;
+	height: 3%;
+	font-size: 0.98vw;
 	color: white;
 	background-color: rgb(20,20,20);
 	border: 0.1vw ridge rgb(30,30,30);

@@ -20,15 +20,20 @@ export interface SocketData {
     matchId: string;
 }
 
-export interface Play {
-    pass: boolean;
+export type Play = {
+    pass: true;
+} | {
+    pass?: false;
     card: number;
-    rowName: string|null;
+    rowName?: string;
 }
 
 export interface ServerToClientEvents {
-    redraw: (otherReadyListener: (onOtherReady: () => void) => void, onReady: () => void) => void;
+    redraw: (callback: () => void) => void;
     played: (play: Play) => void;
+    ask_start: (callback: (start: boolean) => void) => void;
+    start: (id: string) => void;
+    ready: () => void;
 }
 
 export interface ClientToServerEvents {

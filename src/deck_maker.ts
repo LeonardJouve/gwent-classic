@@ -6,9 +6,12 @@ import Card from "./card";
 import Carousel from "./carousel";
 import CardContainer from "./card_container";
 import UI from "./ui";
-import Game from "./game";
 import {type CardId} from "./deck";
 import Players from "./players";
+import type {SocketData} from "./types/socket";
+import ClientSocket from "./client_socket";
+import {io} from "socket.io-client";
+import Game from "./game";
 
 interface Leader {
     index: number;
@@ -80,7 +83,8 @@ export default class DeckMaker {
 
 		document.getElementById("download-deck")?.addEventListener("click", () => this.downloadDeck(), false);
 		document.getElementById("add-file")?.addEventListener("change", () => this.uploadDeck(), false);
-		document.getElementById("start-game")?.addEventListener("click", () => this.startNewGame(), false);
+		// document.getElementById("start-game")?.addEventListener("click", () => this.startNewGame(), false);
+		document.getElementById("start-game")?.addEventListener("click", () => this.queue());
 
 		this.update();
         DeckMaker.setCurrent(this);
@@ -88,6 +92,43 @@ export default class DeckMaker {
 
     static setCurrent(curr: DeckMaker) {
         this.curr = curr;
+    }
+
+    async queue() {
+        if (!this.validateDeck()) return;
+
+        const usernameElement = document.getElementById("username") as HTMLInputElement;
+
+        const response = await fetch("/matchmaking", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                id: crypto.randomUUID(),
+                username: usernameElement.value ?? "Player",
+                deck: {
+                    faction: this.faction,
+                    leader: this.leader.index,
+                    cards: this.deck.filter(x => x.count > 0).map(({index, count}) => ({index, count})),
+                },
+            }),
+        });
+
+        const {me, opponent} = await response.json() as {me: SocketData; opponent: SocketData};
+
+        Players.setPlayers({
+            ...me.deck,
+            username: me.username,
+            leader: card_dict[me.deck.leader],
+        }, {
+            ...opponent.deck,
+            username: opponent.username,
+            leader: card_dict[opponent.deck.leader],
+        });
+
+        this.elem.classList.add("hide");
+
+        const socket = io({auth: me});
+        new ClientSocket(socket, me);
     }
 
 	// Called when client selects a deck faction. Clears previous cards and makes valid cards available.
@@ -299,24 +340,33 @@ export default class DeckMaker {
         };
 	}
 
-	// Verifies current deck, creates the players and their decks, then starts a new game
-	startNewGame(){
-		let warning = "";
+    validateDeck() {
+        let warning = "";
 		if (this.stats.units < 22)
 			warning += "Your deck must have at least 22 unit cards. \n";
 		if (this.stats.special > 10)
 			warning += "Your deck must have no more than 10 special cards. \n";
-		if (warning != "")
-			return alert(warning);
+		if (warning != "") {
+			alert(warning);
+            return false;
+        }
+        return true;
+    }
+
+	// Verifies current deck, creates the players and their decks, then starts a new game
+	startNewGame(){
+        if (!this.validateDeck()) return;
 
         const deckIndex = randomInt(Object.keys(premade_deck).length);
         const leaders: CardData[] = card_dict.filter(c => c.row === "leader" && c.deck === premade_deck[deckIndex].faction);
 
         Players.setPlayers({
+            username: "Player 1",
             faction: this.faction,
             leader: card_dict[this.leader.index],
             cards: this.deck.filter(x => x.count > 0),
         }, {
+            username: "Player 2",
             ...premade_deck[deckIndex],
             cards: premade_deck[deckIndex].cards.map(c => ({index:c[0], count:c[1]}) ),
             leader: leaders[randomInt(leaders.length)],

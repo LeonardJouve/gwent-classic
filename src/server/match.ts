@@ -26,7 +26,20 @@ export default class Match {
     async tryStart() {
         if (!this.canStart()) return;
 
+        let firstPlayerId = this.sockets[Math.floor(Math.random() * this.sockets.length)].data.id;
+
+        const scoiataels = this.sockets.filter((socket) => socket.data.deck.faction === "scoiatael");
+        if (scoiataels.length === 1) {
+            firstPlayerId = await new Promise<string>((resolve) => scoiataels[0].emit("ask_start", (start) => {
+                resolve(start ? scoiataels[0].data.id : this.sockets.find((socket) => socket.data.deck.faction !== "scoiatael")!.data.id);
+            }));
+        }
+
+        this.sockets.forEach((socket) => socket.emit("start", firstPlayerId));
+
         await this.redraw();
+
+        this.sockets.forEach((socket) => socket.emit("ready"));
     }
 
     setListeners(socket: ServerSideSocket) {
@@ -36,10 +49,9 @@ export default class Match {
     }
 
     async redraw() {
-        const otherReadyListeners: (() => void)[] = [];
         return await Promise.all(this.sockets.map((socket) => new Promise<void>((resolve) => {
-            socket.emit("redraw", (onOtherReady) => otherReadyListeners.push(onOtherReady), resolve)
-        }))).then(() => otherReadyListeners.forEach((callback) => callback()));
+            socket.emit("redraw", resolve)
+        })));
     }
 
     handleEnded() {

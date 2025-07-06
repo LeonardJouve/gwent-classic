@@ -30,7 +30,8 @@ export default class Deck extends CardContainer {
 
 	// Creates duplicates of cards with a count of more than one, then initializes deck
 	initializeFromID(card_id_list: CardId[], player: Player){
-		this.initialize( card_id_list.reduce<CardData[]>((a,c) => a.concat(clone(c.count, card_dict[c.index])), []), player);
+		// TODO: seed deck
+        this.initialize( card_id_list.reduce<CardData[]>((a,c) => a.concat(clone(c.count, card_dict[c.index])), []), player);
 		function clone(n: number, elem: CardData) {
             const a: CardData[] = [];
             for (let  i=0; i<n; ++i) a.push(elem);

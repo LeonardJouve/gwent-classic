@@ -13,7 +13,8 @@ import Players from "./players";
 import UI from "./ui";
 import Game from "./game";
 import type Row from "./row";
-import {type CardData} from "./cards";
+import card_dict, {type CardData} from "./cards";
+import ClientSocket from "./client_socket";
 
 export interface DeckData {
     faction: string;
@@ -53,7 +54,7 @@ export default class Player {
 
         this.id = id;
 		this.tag = (id === 0) ? "me" : "op";
-		this.controller = (id === 0) ? new Controller() : new ControllerAI(this);
+		this.controller = new Controller(); // (id === 0) ? new Controller() : new ControllerAI(this);
 
 		this.hand = (id === 0) ? new Hand(document.getElementById("hand-row") as HTMLElement) : new HandAI();
 		this.grave =  new Grave( document.getElementById("grave-" + this.tag) as HTMLElement);
@@ -150,6 +151,10 @@ export default class Player {
 
 	// Passes the round and ends the turn
 	passRound(){
+        if (this === Players.curr.player_me) {
+            ClientSocket.curr.play({pass: true});
+        }
+
 		this.setPassed(true);
 		this.endTurn();
 	}
@@ -212,7 +217,13 @@ export default class Player {
 
 	// Use a leader's Activate ability, then disable the leader
 	async activateLeader() {
-		UI.curr.showPreviewVisuals(this.leader);
+		if (this === Players.curr.player_me) {
+            const card = card_dict.findIndex(({name}) => name === this.leader.name);
+            if (card === -1) throw new Error("Could not find leader card");
+            ClientSocket.curr.play({card});
+        }
+
+        UI.curr.showPreviewVisuals(this.leader);
 		await sleep(1500);
 		UI.curr.hidePreview();
 		await this.leader.activated[0](this.leader, this);

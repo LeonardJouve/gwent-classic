@@ -1,5 +1,6 @@
 import ability_dict, {type Ability} from "./abilities";
 import Board from "./board";
+import ClientSocket from "./client_socket";
 import factions from "./factions";
 import type Player from "./player";
 import Players from "./players";
@@ -117,9 +118,9 @@ export default class Game {
 		}));
 
 		await this.runEffects(this.gameStart);
-		if (!this.firstPlayer)
-			this.firstPlayer = await this.coinToss();
-		this.initialRedraw();
+		// if (!this.firstPlayer)
+		// 	this.firstPlayer = await this.coinToss();
+		// this.initialRedraw();
 	}
 
 	// Simulated coin toss to determine who starts game
@@ -253,6 +254,8 @@ export default class Game {
 
 		fadeIn(this.endScreen, 300, undefined);
 		UI.curr.enablePlayer(true);
+
+        ClientSocket.curr.ended();
 	}
 
 	// Returns the client to the deck customization screen

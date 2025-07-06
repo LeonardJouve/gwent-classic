@@ -90,7 +90,7 @@ export default class CardContainer {
 	// Adds a card to a random index of the CardContainer
 	addCardRandom(card: Card){
 		this.cards.push(card);
-		const index = randomInt(this.cards.length);
+        const index = randomInt(this.cards.length);
 		if (index !== this.cards.length-1) {
 			const t = this.cards[this.cards.length-1];
 			this.cards[this.cards.length-1] = this.cards[index];

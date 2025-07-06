@@ -2,11 +2,14 @@ import ability_dict from "./abilities";
 import Board from "./board";
 import type Card from "./card";
 import CardContainer from "./card_container";
+import card_dict from "./cards";
 import Carousel from "./carousel";
+import ClientSocket from "./client_socket";
 import ControllerAI from "./controller_ai";
 import Game from "./game";
 import Players from "./players";
 import Popup from "./popup";
+import Row from "./row";
 import {fadeIn, fadeOut, iconURL, largeURL, randomInt, sleep, sleepUntil} from "./utils";
 import Weather from "./weather";
 
@@ -125,12 +128,15 @@ export default class UI {
 			this.enablePlayer(false);
 			Board.curr.toHand(card, row);
 			await Board.curr.moveTo(pCard, row, pCard.holder.hand);
+
+            // TODO: handle decoy
+
 			pCard.holder.endTurn();
 		}
 	}
 
 	// Called when the player selects a selectable CardContainer
-	async selectRow(row: CardContainer){
+	async selectRow(row: Row|Weather){
 		this.lastRow = row;
 		if (this.previewCard === null) {
 			await UI.curr.viewCardsInContainer(row, undefined);
@@ -139,16 +145,42 @@ export default class UI {
 		if (this.previewCard.name === "Decoy")
 			return;
 		const card = this.previewCard;
+
+        const cardIndex = card_dict.findIndex((c) => c.name === card.name);
+        if (cardIndex === -1) throw new Error("Could not find card");
+
 		const holder = card.holder;
 		this.hidePreview();
 		this.enablePlayer(false);
 		if (card.name === "Scorch"){
 			this.hidePreview();
 			await ability_dict["scorch"].activated?.(card);
+
+            ClientSocket.curr.play({card: cardIndex});
 		} else if (card.name === "Decoy") {
 			return;
 		} else {
 			await Board.curr.moveTo(card, row, card.holder.hand);
+
+            let rowName: string;
+            switch (true) {
+            case row instanceof Weather:
+                rowName = "weather";
+                break;
+            case row === Board.curr.row[0] || row === Board.curr.row[5]:
+                rowName = "siege";
+                break;
+            case row === Board.curr.row[1] || row === Board.curr.row[4]:
+                rowName = "ranged";
+                break;
+            case row === Board.curr.row[2] || row === Board.curr.row[3]:
+                rowName = "close";
+                break;
+            default:
+                throw new Error("Unhandled row");
+            }
+
+            ClientSocket.curr.play({card: cardIndex, rowName})
 		}
 		holder.endTurn();
 	}

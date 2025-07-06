@@ -22,7 +22,7 @@ export default class Carousel {
     static curr: Carousel|null;
 
     constructor(container: CardContainer, count: number, action: (container: CardContainer, i: number) => Promise<void>, predicate: (card: Card) => boolean, bSort = false, bExit = false, title?: string) {
-		if (count <= 0 || !container || !action || container.cards.length === 0)
+        if (count <= 0 || !container || !action || container.cards.length === 0)
 			throw new Error("invalid Carousel constructor parameters");
         this.container = container;
 		this.count = count;
