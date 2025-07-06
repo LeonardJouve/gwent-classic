@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "nodenext",
+        "esModuleInterop": true,
+        "moduleResolution": "nodenext",
+        "outDir": "dist"
+    },
+    "include": ["src/server", "src/types"],
+}

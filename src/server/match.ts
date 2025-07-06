@@ -1,4 +1,4 @@
-import type {Play, ServerSideSocket} from "./socket";
+import type {Play, ServerSideSocket} from "../types/socket.js";
 
 export default class Match {
     private sockets: ServerSideSocket[];

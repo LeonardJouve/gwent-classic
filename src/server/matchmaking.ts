@@ -1,13 +1,14 @@
 import {z} from "zod/v4";
+import {DeckSchema, type Deck} from "../types/socket.js";
 import type {Request, Response} from "express";
-import type SocketHandler  from "./socket";
-import type {Deck, SocketData} from "./socket";
+import type SocketHandler  from "./socket.js";
+import type {SocketData} from "../types/socket.js";
 
 interface QueueItem {
     id: string;
     username: string;
     deck: Deck;
-    resolve: (data: SocketData) => void;
+    resolve: (data: {me: SocketData; opponent: SocketData}) => void;
 }
 
 class Queue {
@@ -38,18 +39,11 @@ class Queue {
     }
 }
 
-const Input = z.union([
+const MatchmakingInput = z.union([
     z.object({
         id: z.string(),
         username: z.string(),
-        deck:  z.object({
-            faction: z.string(),
-            leader: z.number(),
-            cards: z.array(z.object({
-                index: z.number(),
-                count: z.number(),
-            })),
-        }),
+        deck:  DeckSchema,
         abort: z.optional(z.literal(false)),
     }),
     z.object({
@@ -64,6 +58,7 @@ export default class MatchmakingHandler {
 
     constructor(socketHandler: SocketHandler) {
         this.socketHandler = socketHandler;
+        this.queue = new Queue();
     }
 
     tryFindMatch() {
@@ -73,10 +68,16 @@ export default class MatchmakingHandler {
 
             this.socketHandler.addMatch(matchId, items.map(({id}) => id));
 
-            items.forEach((item) => {
+            items.forEach((item, i) => {
                 item.resolve({
-                    ...item,
-                    matchId,
+                    me : {
+                        ...item,
+                        matchId,
+                    },
+                    opponent: {
+                        ...items[i + 1 % items.length],
+                        matchId,
+                    },
                 });
             });
         }
@@ -84,7 +85,7 @@ export default class MatchmakingHandler {
 
     async handle(req: Request, res: Response) {
         try {
-            const input = Input.parse(req.body);
+            const input = MatchmakingInput.parse(req.body);
 
             if (input.abort === true) {
                 if (!this.queue.contains(input.id)) {

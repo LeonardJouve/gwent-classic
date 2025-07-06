@@ -1,44 +1,8 @@
 import type {Server as NodeServer} from "node:http";
 import type {Http2SecureServer} from "node:http2";
-import {Server, type Socket as ServerSocket} from "socket.io";
-import {type Socket as ClientSocket} from "socket.io-client";
-import Match from "./match";
-
-export interface Deck {
-    faction: string;
-    leader: number;
-    cards: {
-        index: number;
-        count:number;
-    }[];
-}
-
-export interface SocketData {
-    id: string;
-    username: string;
-    deck: Deck;
-    matchId: string;
-}
-
-export interface Play {
-    pass: boolean;
-    card: number;
-    rowName: string|null;
-}
-
-export interface ServerToClientEvents {
-    redraw: (otherReadyListener: (onOtherReady: () => void) => void, onReady: () => void) => void;
-    played: (play: Play) => void;
-}
-
-export interface ClientToServerEvents {
-    play: (play: Play) => void;
-    ended: () => void;
-    disconnect: () => void;
-}
-
-export type ServerSideSocket = ServerSocket<ClientToServerEvents, ServerToClientEvents, never, SocketData>;
-export type ClientSideSocket = ClientSocket<ServerToClientEvents, ClientToServerEvents>;
+import {Server} from "socket.io";
+import Match from "./match.js";
+import type {ClientToServerEvents, ServerToClientEvents, SocketData} from "../types/socket.js";
 
 export default class SocketHandler {
     private matches: Map<string, Match>;
